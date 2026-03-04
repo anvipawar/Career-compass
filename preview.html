@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CareerCompass AI | Smart Career Guidance</title>
+    <meta name="description"
+        content="AI-powered career guidance platform for personalized career paths and learning roadmaps." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --secondary: #a855f7;
+            --accent: #22d3ee;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1.25rem;
+        }
+
+        .light-mode .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #0f172a;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 24px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary), #ec4899);
+            color: white;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 24px rgba(168, 85, 247, 0.4);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 0.75rem;
+            color: #f8fafc;
+            outline: none;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .input-field:focus {
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+        }
+
+        .light-mode .input-field {
+            background: rgba(241, 245, 249, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        .glow-blob {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(100px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .skill-chip {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.25s;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .skill-chip:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .skill-chip.selected {
+            background: rgba(56, 189, 248, 0.12);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .interest-chip.selected {
+            background: rgba(168, 85, 247, 0.12);
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        .page {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .progress-dot.done {
+            background: var(--primary);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        .career-card {
+            border-radius: 1.25rem;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .career-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .roadmap-item {
+            border-left: 2px solid rgba(56, 189, 248, 0.2);
+            padding-left: 1.5rem;
+            padding-bottom: 2rem;
+            position: relative;
+        }
+
+        .roadmap-item::before {
+            content: attr(data-num);
+            position: absolute;
+            left: -1.1rem;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            background: rgba(56, 189, 248, 0.1);
+            border: 2px solid rgba(56, 189, 248, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .fade-up {
+            animation: fadeUp 0.5s ease-out forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+            opacity: 0;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+            opacity: 0;
+        }
+
+        .spinner {
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Light mode overrides */
+        .light-mode {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .light-mode nav {
+            background: rgba(255, 255, 255, 0.85) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+        }
+
+        .light-mode .nav-link {
+            color: #475569;
+        }
+
+        .light-mode .nav-link:hover,
+        .light-mode .nav-link.active {
+            color: #0ea5e9;
+        }
+
+        .light-mode .muted {
+            color: #64748b !important;
+        }
+
+        .light-mode .hero-bg {
+            opacity: 0.07;
+        }
+
+        .light-mode .skill-chip {
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #334155;
+        }
+
+        .light-mode .badge {
+            background: rgba(0, 0, 0, 0.05) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .chart-bar {
+            border-radius: 6px;
+            transition: height 0.8s ease-out;
+        }
+    </style>
+</head>
+
+<body id="body" class="bg-slate-950 text-slate-100 transition-colors duration-300">
+
+    <!-- ======== NAVBAR ======== -->
+    <nav id="navbar"
+        class="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-lg border-b border-white/5 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2 cursor-pointer" onclick="goTo('home')">
+            <div style="background:rgba(56,189,248,0.15);padding:0.45rem;border-radius:0.6rem">
+                <svg width="20" height="20" fill="none" stroke="#38bdf8" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="12" x2="16" y2="14" />
+                </svg>
+            </div>
+            <span style="font-family:Outfit;font-weight:700;font-size:1.2rem">CareerCompass<span
+                    style="color:#38bdf8">AI</span></span>
+        </div>
+        <div class="hidden md:flex items-center gap-8">
+            <a onclick="goTo('home')"
+                class="nav-link text-slate-400 hover:text-sky-400 cursor-pointer transition-colors text-sm font-medium">Home</a>
+            <a onclick="goTo('assessment')"
+                class="nav-link text-slate-400 hover:text-sky-400 cursor-pointer transition-colors text-sm font-medium">Assessment</a>
+            <a onclick="goTo('dashboard')"
+                class="nav-link text-slate-400 hover:text-sky-400 cursor-pointer transition-colors text-sm font-medium">Dashboard</a>
+            <a onclick="goTo('colleges')"
+                class="nav-link text-slate-400 hover:text-sky-400 cursor-pointer transition-colors text-sm font-medium">🎓
+                Colleges</a>
+            <a onclick="goTo('jobs')"
+                class="nav-link text-slate-400 hover:text-sky-400 cursor-pointer transition-colors text-sm font-medium">💼
+                Jobs</a>
+            <a onclick="goTo('courses')"
+                class="nav-link text-slate-400 hover:text-sky-400 cursor-pointer transition-colors text-sm font-medium">📚
+                Courses</a>
+            <button onclick="toggleTheme()" id="themeBtn"
+                class="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-sky-400 transition-all"
+                title="Toggle Theme">
+                <svg id="sunIcon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <svg id="moonIcon" class="hidden" width="18" height="18" fill="none" stroke="currentColor"
+                    stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+            <button onclick="goTo('login')" class="btn-primary text-sm py-2 px-5">Get Started</button>
+        </div>
+        <!-- Mobile menu -->
+        <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-400" id="mobileMenuBtn">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+        </button>
+    </nav>
+    <div id="mobileMenu"
+        class="hidden fixed top-16 left-0 right-0 z-40 bg-slate-900 border-b border-white/10 px-6 pb-6 pt-4 flex-col gap-4 shadow-2xl">
+        <a onclick="goTo('home');toggleMobileMenu()"
+            class="text-slate-300 text-lg font-medium py-2 cursor-pointer">Home</a>
+        <a onclick="goTo('assessment');toggleMobileMenu()"
+            class="text-slate-300 text-lg font-medium py-2 cursor-pointer">Assessment</a>
+        <a onclick="goTo('dashboard');toggleMobileMenu()"
+            class="text-slate-300 text-lg font-medium py-2 cursor-pointer">Dashboard</a>
+        <a onclick="goTo('colleges');toggleMobileMenu()"
+            class="text-slate-300 text-lg font-medium py-2 cursor-pointer">🎓 Colleges</a>
+        <a onclick="goTo('jobs');toggleMobileMenu()" class="text-slate-300 text-lg font-medium py-2 cursor-pointer">💼
+            Jobs</a>
+        <button onclick="toggleTheme()"
+            class="flex items-center gap-3 py-3 px-4 rounded-xl bg-slate-800 text-slate-300 font-medium mt-2">
+            <span id="themeLabel">Switch to Light Mode</span>
+        </button>
+        <button onclick="goTo('login')" class="btn-primary text-center mt-1">Get Started</button>
+    </div>
+
+    <!-- ======== HOME PAGE ======== -->
+    <div id="page-home" class="page active pt-16">
+        <section class="relative px-6 py-32 overflow-hidden">
+            <div class="glow-blob hero-bg" style="width:500px;height:500px;background:#38bdf8;top:-100px;left:-100px">
+            </div>
+            <div class="glow-blob hero-bg"
+                style="width:500px;height:500px;background:#a855f7;bottom:-100px;right:-100px"></div>
+            <div class="max-w-5xl mx-auto text-center relative z-10">
+                <div class="fade-up inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-6"
+                    style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);color:#38bdf8">
+                    ✦ AI-Powered Career Evolution
+                </div>
+                <h1 class="fade-up delay-1 text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight"
+                    style="font-family:Outfit">
+                    Navigate Your Future with<br><span class="text-gradient">Precision Intelligence</span>
+                </h1>
+                <p
+                    class="fade-up delay-2 text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed muted">
+                    Stop guessing your career path. Let our advanced AI analyze your unique skills and interests to map
+                    out the perfect professional journey—tailored just for you.
+                </p>
+                <div class="fade-up delay-3 flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="goTo('assessment')" class="btn-primary flex items-center justify-center gap-2">
+                        Start Free Assessment →
+                    </button>
+                    <button
+                        class="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-slate-300 hover:bg-white/5 transition-all font-medium">
+                        <span
+                            style="background:rgba(56,189,248,0.15);padding:0.3rem;border-radius:50%;display:inline-flex">▶</span>
+                        See How It Works
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Cards -->
+        <section class="px-6 pb-20">
+            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-card p-8 group hover:scale-[1.02] transition-all cursor-default">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
+                        style="background:rgba(56,189,248,0.1)">
+                        <svg width="22" height="22" fill="none" stroke="#38bdf8" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 2a10 10 0 1 0 10 10" />
+                            <path d="M12 6v6l4 2" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Skill Analysis</h3>
+                    <p class="text-slate-400 leading-relaxed muted">In-depth evaluation of your technical and soft
+                        skills using advanced cognitive mapping algorithms.</p>
+                </div>
+                <div class="glass-card p-8 group hover:scale-[1.02] transition-all cursor-default">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
+                        style="background:rgba(168,85,247,0.1)">
+                        <svg width="22" height="22" fill="none" stroke="#a855f7" stroke-width="2" viewBox="0 0 24 24">
+                            <line x1="18" y1="20" x2="18" y2="10" />
+                            <line x1="12" y1="20" x2="12" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="14" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Market Trends</h3>
+                    <p class="text-slate-400 leading-relaxed muted">Real-time integration with global job market data
+                        for high-demand path suggestions tailored to your profile.</p>
+                </div>
+                <div class="glass-card p-8 group hover:scale-[1.02] transition-all cursor-default">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
+                        style="background:rgba(34,211,238,0.1)">
+                        <svg width="22" height="22" fill="none" stroke="#22d3ee" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 8 12 12 14 14" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">6-Month Roadmaps</h3>
+                    <p class="text-slate-400 leading-relaxed muted">Actionable, step-by-step learning paths to bridge
+                        your skill gaps and reach your career goals faster.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Bar -->
+        <section class="px-6 py-16 border-y border-white/5" style="background:rgba(255,255,255,0.02)">
+            <div class="max-w-5xl mx-auto flex flex-wrap justify-around gap-10 text-center">
+                <div>
+                    <div class="text-4xl font-extrabold text-gradient mb-1">500+</div>
+                    <div class="text-sm text-slate-500 uppercase tracking-wider font-semibold">Career Paths</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-extrabold text-gradient mb-1">98%</div>
+                    <div class="text-sm text-slate-500 uppercase tracking-wider font-semibold">Match Accuracy</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-extrabold text-gradient mb-1">10k+</div>
+                    <div class="text-sm text-slate-500 uppercase tracking-wider font-semibold">Learning Resources</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-extrabold text-gradient mb-1">24/7</div>
+                    <div class="text-sm text-slate-500 uppercase tracking-wider font-semibold">AI Support</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Access Features -->
+        <section class="px-6 py-20">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-4"
+                        style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);color:#38bdf8">⚡
+                        Quick Access</div>
+                    <h2 class="text-3xl md:text-4xl font-extrabold mb-3" style="font-family:Outfit">Everything You Need,
+                        In One Place</h2>
+                    <p class="text-slate-400 muted max-w-xl mx-auto">Jump directly to any feature — explore colleges,
+                        find jobs, learn skills, or view your career dashboard.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Assessment -->
+                    <div onclick="goTo('assessment')"
+                        class="glass-card p-7 cursor-pointer hover:scale-[1.03] transition-all group"
+                        style="border:1px solid rgba(56,189,248,0.2)">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                            style="background:linear-gradient(135deg,rgba(56,189,248,0.2),rgba(34,211,238,0.08))">🧠
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-sky-400 transition-colors">Career Assessment
+                        </h3>
+                        <p class="text-slate-400 muted text-sm mb-5 leading-relaxed">Answer 5 quick steps about your
+                            stream, subjects, skills & interests — get AI-powered career matches instantly.</p>
+                        <button class="btn-primary text-sm py-2 px-5 w-full">Start Assessment →</button>
+                    </div>
+
+                    <!-- Dashboard -->
+                    <div onclick="goTo('dashboard')"
+                        class="glass-card p-7 cursor-pointer hover:scale-[1.03] transition-all group"
+                        style="border:1px solid rgba(168,85,247,0.2)">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                            style="background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(139,92,246,0.08))">📊
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-purple-400 transition-colors">My Dashboard
+                        </h3>
+                        <p class="text-slate-400 muted text-sm mb-5 leading-relaxed">View your personalised career
+                            recommendations, skill breakdown, match scores and 6-month roadmap.</p>
+                        <button class="text-sm py-2 px-5 w-full rounded-xl font-semibold transition-all"
+                            style="background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);color:#a855f7">View
+                            Dashboard →</button>
+                    </div>
+
+                    <!-- College Finder -->
+                    <div onclick="goTo('colleges')"
+                        class="glass-card p-7 cursor-pointer hover:scale-[1.03] transition-all group"
+                        style="border:1px solid rgba(14,165,233,0.2)">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                            style="background:linear-gradient(135deg,rgba(14,165,233,0.2),rgba(56,189,248,0.08))">🎓
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-sky-400 transition-colors">College Finder
+                        </h3>
+                        <p class="text-slate-400 muted text-sm mb-5 leading-relaxed">Browse 30+ colleges across
+                            Maharashtra — filter by stream, city (Nashik, Pune, Mumbai), type and course name.</p>
+                        <button class="btn-primary text-sm py-2 px-5 w-full">Find Colleges →</button>
+                    </div>
+
+                    <!-- Job Finder -->
+                    <div onclick="goTo('jobs')"
+                        class="glass-card p-7 cursor-pointer hover:scale-[1.03] transition-all group"
+                        style="border:1px solid rgba(245,158,11,0.2)">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                            style="background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(251,191,36,0.08))">💼
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-amber-400 transition-colors">Job Finder</h3>
+                        <p class="text-slate-400 muted text-sm mb-5 leading-relaxed">24+ fresher jobs, internships &
+                            part-time roles across Engineering, Medical, Business, Law, Creative and more.</p>
+                        <button class="text-sm py-2 px-5 w-full rounded-xl font-semibold transition-all"
+                            style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#f59e0b">Find
+                            Jobs →</button>
+                    </div>
+
+                    <!-- Skill Courses -->
+                    <div onclick="goTo('courses')"
+                        class="glass-card p-7 cursor-pointer hover:scale-[1.03] transition-all group sm:col-span-2 lg:col-span-1"
+                        style="border:1px solid rgba(16,185,129,0.2)">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                            style="background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(6,182,212,0.08))">📚
+                        </div>
+                        <h3 class="text-xl font-bold mb-2 group-hover:text-emerald-400 transition-colors">Skill Courses
+                        </h3>
+                        <p class="text-slate-400 muted text-sm mb-5 leading-relaxed">34+ free & paid courses — Python,
+                            BEE, Engineering Mechanics, NEET Biology, Tally, Digital Marketing and more.</p>
+                        <button class="text-sm py-2 px-5 w-full rounded-xl font-semibold transition-all"
+                            style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#10b981">Explore
+                            Courses →</button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ======== LOGIN PAGE ======== -->
+    <div id="page-login" class="page pt-16">
+        <div class="min-h-screen flex items-center justify-center px-6 py-12">
+            <div class="glass-card w-full max-w-md p-8 sm:p-10">
+                <div class="text-center mb-8">
+                    <div class="inline-flex p-3 rounded-2xl mb-4" style="background:rgba(56,189,248,0.1)">
+                        <svg width="30" height="30" fill="none" stroke="#38bdf8" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                            <polyline points="10 17 15 12 10 7" />
+                            <line x1="15" y1="12" x2="3" y2="12" />
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-bold mb-1">Welcome Back</h1>
+                    <p class="text-slate-400 muted">Sign in to continue your career journey</p>
+                </div>
+                <div class="space-y-5">
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">✉</span>
+                        <input class="input-field" type="email" placeholder="name@example.com" />
+                    </div>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">🔒</span>
+                        <input class="input-field" type="password" placeholder="••••••••" />
+                    </div>
+                    <button onclick="goTo('dashboard')" class="btn-primary w-full py-4 text-base mt-2">Sign In</button>
+                </div>
+                <p class="text-center mt-6 text-slate-400 text-sm muted">Don't have an account? <a
+                        onclick="goTo('signup')" class="font-bold cursor-pointer" style="color:#38bdf8">Create one</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== SIGNUP PAGE ======== -->
+    <div id="page-signup" class="page pt-16">
+        <div class="min-h-screen flex items-center justify-center px-6 py-12">
+            <div class="glass-card w-full max-w-md p-8 sm:p-10">
+                <div class="text-center mb-8">
+                    <div class="inline-flex p-3 rounded-2xl mb-4" style="background:rgba(168,85,247,0.1)">
+                        <svg width="30" height="30" fill="none" stroke="#a855f7" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <line x1="19" y1="8" x2="19" y2="14" />
+                            <line x1="22" y1="11" x2="16" y2="11" />
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-bold mb-1">Create Account</h1>
+                    <p class="text-slate-400 muted">Join thousands shaping their future</p>
+                </div>
+                <div class="space-y-5">
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">👤</span>
+                        <input class="input-field" type="text" placeholder="Full Name" />
+                    </div>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">✉</span>
+                        <input class="input-field" type="email" placeholder="name@example.com" />
+                    </div>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">🔒</span>
+                        <input class="input-field" type="password" placeholder="••••••••" />
+                    </div>
+                    <button onclick="goTo('assessment')" class="btn-secondary w-full py-4 text-base mt-2">Create
+                        Account</button>
+                </div>
+                <p class="text-center mt-6 text-slate-400 text-sm muted">Already have an account? <a
+                        onclick="goTo('login')" class="font-bold cursor-pointer" style="color:#a855f7">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======== ASSESSMENT PAGE ======== -->
+    <div id="page-assessment" class="page pt-16">
+        <div class="max-w-3xl mx-auto px-6 py-12" id="assessmentContent">
+            <!-- Dynamic content injected via JS -->
+        </div>
+    </div>
+
+    <!-- ======== DASHBOARD PAGE ======== -->
+    <div id="page-dashboard" class="page pt-16">
+        <div class="max-w-6xl mx-auto px-6 py-12">
+            <div id="loadingState" class="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+                <div class="relative w-20 h-20">
+                    <div class="absolute inset-0 rounded-full border-4 border-sky-400 opacity-20"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-sky-400 border-t-transparent spinner">
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center text-2xl">⚡</div>
+                </div>
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold mb-2">Analyzing Your Profile</h2>
+                    <p class="text-slate-400 muted animate-pulse">Our AI is matching your skills with market demands...
+                    </p>
+                </div>
+            </div>
+            <div id="dashboardContent" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- ======== CAREER DETAILS PAGE ======== -->
+    <div id="page-career" class="page pt-16">
+        <div class="max-w-5xl mx-auto px-6 py-12" id="careerContent">
+        </div>
+    </div>
+
+    <!-- ======== COLLEGE FINDER PAGE ======== -->
+    <div id="page-colleges" class="page pt-16">
+        <div class="max-w-6xl mx-auto px-6 py-12">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-4"
+                    style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);color:#38bdf8">🎓
+                    College Finder</div>
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-4" style="font-family:Outfit">Find Your Perfect
+                    College</h1>
+                <p class="text-slate-400 max-w-2xl mx-auto muted">Browse and search colleges across Maharashtra by
+                    stream, city, or course name.</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="glass-card p-6 mb-10">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">12th Stream</label>
+                        <select id="col_stream" class="input-field" style="padding-left:1rem"
+                            onchange="filterColleges()">
+                            <option value="">All Streams</option>
+                            <option value="PCM">PCM – Engineering / Tech</option>
+                            <option value="PCB">PCB – Medical / Biology</option>
+                            <option value="Commerce">Commerce – Business / Finance</option>
+                            <option value="Arts">Arts / Humanities</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">City / Location</label>
+                        <select id="col_city" class="input-field" style="padding-left:1rem" onchange="filterColleges()">
+                            <option value="">All Cities</option>
+                            <option value="Nashik">Nashik</option>
+                            <option value="Pune">Pune</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Sangamner">Sangamner / Near Nashik</option>
+                            <option value="Sangli">Sangli</option>
+                            <option value="Loni">Loni / Near Nashik</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">College Type</label>
+                        <select id="col_type" class="input-field" style="padding-left:1rem" onchange="filterColleges()">
+                            <option value="">All Types</option>
+                            <option value="Government">Government</option>
+                            <option value="Private">Private / Deemed</option>
+                            <option value="Autonomous">Autonomous</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">Search by Name or Course</label>
+                        <input id="col_search" type="text" placeholder="e.g. MIT, MBBS, Engineering..."
+                            class="input-field" style="padding-left:1rem" oninput="filterColleges()" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results count -->
+            <p id="colCount" class="text-sm text-slate-500 mb-6 muted"></p>
+
+            <!-- Results -->
+            <div id="collegeResults" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- ======== JOB FINDER PAGE ======== -->
+    <div id="page-jobs" class="page pt-16">
+        <div class="max-w-6xl mx-auto px-6 py-12">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-4"
+                    style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);color:#a855f7">💼 Job
+                    Finder</div>
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-4" style="font-family:Outfit">Discover Jobs &
+                    Opportunities</h1>
+                <p class="text-slate-400 max-w-2xl mx-auto muted">Find fresher roles, internships, and entry-level
+                    positions matching your interests and skills.</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="glass-card p-6 mb-10">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">Field / Domain</label>
+                        <select id="job_domain" class="input-field" style="padding-left:1rem" onchange="filterJobs()">
+                            <option value="">All Fields</option>
+                            <option value="Engineering">Engineering & Tech</option>
+                            <option value="Medical">Medical & Healthcare</option>
+                            <option value="Business">Business & Finance</option>
+                            <option value="Creative">Creative & Media</option>
+                            <option value="Government">Government & Defence</option>
+                            <option value="Education">Teaching & Education</option>
+                            <option value="Law">Law & Legal</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">Job Type</label>
+                        <select id="job_type" class="input-field" style="padding-left:1rem" onchange="filterJobs()">
+                            <option value="">All Types</option>
+                            <option value="Fresher">Fresher / Entry-Level</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Remote">Remote</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">Search Keyword</label>
+                        <input id="job_search" type="text" placeholder="e.g. Data Analyst, Teacher..."
+                            class="input-field" style="padding-left:1rem" oninput="filterJobs()" />
+                    </div>
+                    <button onclick="filterJobs()" class="btn-secondary py-3 flex items-center justify-center gap-2">
+                        🔍 Find Jobs
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="jobResults" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- ======== SKILL COURSES PAGE ======== -->
+    <div id="page-courses" class="page pt-16">
+        <div class="max-w-6xl mx-auto px-6 py-12">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold mb-4"
+                    style="background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#10b981">📚
+                    Skill Courses</div>
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-4" style="font-family:Outfit">Learn. Grow. Succeed.
+                </h1>
+                <p class="text-slate-400 max-w-2xl mx-auto muted">Curated free & paid courses for every stream — from
+                    Python for Beginners to NEET prep, Business skills, and more.</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="glass-card p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">Domain</label>
+                        <select id="crs_domain" class="input-field" style="padding-left:1rem"
+                            onchange="filterCourses()">
+                            <option value="">All Domains</option>
+                            <option value="Tech">💻 Technology & Coding</option>
+                            <option value="Business">💼 Business & Finance</option>
+                            <option value="Medical">🏥 Medical & Health</option>
+                            <option value="Creative">🎨 Creative & Media</option>
+                            <option value="Government">🏛 Government & UPSC</option>
+                            <option value="Science">🔬 Science & Engineering</option>
+                            <option value="FY Engineering">🎓 FY Engineering (1st Year)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">Level</label>
+                        <select id="crs_level" class="input-field" style="padding-left:1rem" onchange="filterCourses()">
+                            <option value="">All Levels</option>
+                            <option value="Beginner">🟢 Beginner</option>
+                            <option value="Intermediate">🟡 Intermediate</option>
+                            <option value="Advanced">🔴 Advanced</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">Price</label>
+                        <select id="crs_price" class="input-field" style="padding-left:1rem" onchange="filterCourses()">
+                            <option value="">All Courses</option>
+                            <option value="Free">🆓 Free Only</option>
+                            <option value="Paid">💳 Paid</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-300">Search</label>
+                        <input id="crs_search" type="text" placeholder="e.g. Python, Tally, NEET..." class="input-field"
+                            style="padding-left:1rem" oninput="filterCourses()" />
+                    </div>
+                </div>
+            </div>
+            <p id="crsCount" class="text-sm text-slate-500 mb-6 muted"></p>
+            <div id="courseResults" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- ======== FOOTER ======== -->
+    <footer class="bg-slate-950/80 border-t border-white/5 py-12 px-6 mt-auto">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-between gap-12">
+            <div class="max-w-xs">
+                <div class="flex items-center gap-2 mb-4 cursor-pointer" onclick="goTo('home')">
+                    <span style="font-family:Outfit;font-weight:700;font-size:1.1rem">CareerCompass<span
+                            style="color:#38bdf8">AI</span></span>
+                </div>
+                <p class="text-slate-500 text-sm leading-relaxed">Empowering the next generation of professionals with
+                    AI-driven career insights.</p>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-4">Platform</h4>
+                <ul class="space-y-2 text-slate-500 text-sm">
+                    <li><a onclick="goTo('assessment')"
+                            class="hover:text-sky-400 cursor-pointer transition-colors">Assessment</a></li>
+                    <li><a onclick="goTo('dashboard')"
+                            class="hover:text-sky-400 cursor-pointer transition-colors">Career Explorer</a></li>
+                    <li><a class="hover:text-sky-400 cursor-pointer transition-colors">Roadmap Generator</a></li>
+                    <li><a class="hover:text-sky-400 cursor-pointer transition-colors">Market Trends</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-4">Support</h4>
+                <ul class="space-y-2 text-slate-500 text-sm">
+                    <li><a class="hover:text-sky-400 cursor-pointer transition-colors">Help Center</a></li>
+                    <li><a class="hover:text-sky-400 cursor-pointer transition-colors">Privacy Policy</a></li>
+                    <li><a class="hover:text-sky-400 cursor-pointer transition-colors">Terms of Service</a></li>
+                    <li><a class="hover:text-sky-400 cursor-pointer transition-colors">Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto mt-10 pt-8 border-t border-white/5 text-center text-slate-600 text-sm">
+            © 2026 CareerCompass AI. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // ====== STATE ======
+        let isDark = true;
+        let assessmentStep = 1;
+        const assessmentData = { studentProfile: {}, techSkills: [], softSkills: [], interests: [] };
+
+        const techSkills = [
+            'Mathematics & Statistics',
+            'Science (Physics / Chemistry)',
+            'Biology & Life Sciences',
+            'Computer Science & Coding',
+            'Accountancy & Finance',
+            'Economics & Business Studies',
+            'History, Civics & Political Science',
+            'Geography & Environment',
+            'English Language & Literature',
+            'Art, Design & Creativity',
+            'Engineering Drawing / CAD',
+            'Health Science & Nursing',
+            'Psychology & Sociology',
+            'Agriculture & Environmental Science',
+            'Law & Legal Studies',
+            'Sports Science & Physical Education',
+        ];
+        const softSkills = [
+            'Communication',
+            'Leadership',
+            'Problem Solving',
+            'Creativity & Innovation',
+            'Teamwork & Collaboration',
+            'Time Management',
+            'Critical Thinking',
+            'Adaptability',
+            'Empathy & Emotional Intelligence',
+            'Research & Analysis',
+            'Presentation & Public Speaking',
+            'Decision Making',
+        ];
+        const interests = [
+            'Engineering & Technology',
+            'Medicine & Healthcare',
+            'Business & Entrepreneurship',
+            'Arts, Media & Design',
+            'Law & Justice',
+            'Teaching & Education',
+            'Government & Civil Services',
+            'Finance & Banking',
+            'Agriculture & Environment',
+            'Journalism & Mass Communication',
+            'Sports & Physical Fitness',
+            'Social Work & NGOs',
+            'Architecture & Urban Planning',
+            'Research & Academia',
+            'Defence & Armed Forces',
+            'Hospitality & Tourism',
+        ];
+
+        const careers = [
+            {
+                id: 'engineer', title: 'Engineer (Tech / Core)', score: 92, demand: 'Very High', salary: '₹5L – ₹25L/yr',
+                gradient: 'linear-gradient(135deg,#0ea5e9,#22d3ee)',
+                desc: 'Apply science and maths to design, build and improve systems — from software to civil structures. Ideal for PCM students with strong analytical thinking.',
+                missing: ['Advanced Mathematics', 'Domain Specialisation', 'Problem Solving', 'CAD / Coding basics'],
+                roadmap: [
+                    { m: 'Month 1', t: 'Foundation Strengthening', items: ['Revisit Maths & Physics concepts', 'Understand engineering disciplines', 'JEE/CET preparation basics'] },
+                    { m: 'Month 2', t: 'Choose Your Branch', items: ['CS vs Mechanical vs Civil vs EE', 'Attend open days & counselling', 'Research top colleges (IITs, NITs, COEP)'] },
+                    { m: 'Month 3', t: 'Skill Building', items: ['Learn programming basics (Python / C)', 'AutoCAD / SolidWorks intro', 'Work on mini-projects'] },
+                    { m: 'Month 4', t: 'Internships & Projects', items: ['Find summer internships', 'Contribute to open source', 'Join college tech clubs'] },
+                    { m: 'Month 5', t: 'Competitive Exams', items: ['GATE basics', 'Campus placement prep', 'Core subject revision'] },
+                    { m: 'Month 6', t: 'Career Launch', items: ['Resume & LinkedIn profile', 'Mock interviews', 'Apply for campus placements'] }
+                ]
+            },
+            {
+                id: 'medicine', title: 'Doctor / Medical Professional', score: 90, demand: 'Very High', salary: '₹6L – ₹30L/yr',
+                gradient: 'linear-gradient(135deg,#10b981,#06b6d4)',
+                desc: 'Diagnose, treat and care for people — one of the most respected and meaningful careers. Best suited for PCB students with empathy and curiosity for life sciences.',
+                missing: ['NEET Preparation', 'Biology depth (Class 11–12)', 'Chemistry Organic', 'Clinical exposure'],
+                roadmap: [
+                    { m: 'Month 1', t: 'NEET Foundation', items: ['NCERT Biology deep-dive', 'Physics & Chemistry revision', 'Practice MCQs daily'] },
+                    { m: 'Month 2', t: 'Advanced Preparation', items: ['Mock test schedule', 'Focus: Botany & Zoology', 'Diagrams & lab practice'] },
+                    { m: 'Month 3', t: 'Medical Specialities', items: ['Research MBBS vs BDS vs BAMS', 'Visit local clinics / hospitals', 'Talk to medical students'] },
+                    { m: 'Month 4', t: 'College Research', items: ['Government vs Private colleges', 'State quota vs All India quota', 'Fees and bond obligations'] },
+                    { m: 'Month 5', t: 'Final Revision', items: ['Topic-wise revision plan', 'Solve previous NEET papers', 'Focus on weak areas'] },
+                    { m: 'Month 6', t: 'Exam & Admission', items: ['NEET exam prep', 'Counselling process', 'Prepare documents'] }
+                ]
+            },
+            {
+                id: 'business', title: 'Entrepreneur / Business Manager', score: 88, demand: 'High', salary: '₹4L – ₹20L+/yr',
+                gradient: 'linear-gradient(135deg,#f59e0b,#f97316)',
+                desc: 'Launch and grow businesses, manage teams, and solve real-world problems. Commerce students and creative thinkers from any stream thrive here.',
+                missing: ['Business Plan Writing', 'Financial Literacy', 'Marketing basics', 'Leadership skills'],
+                roadmap: [
+                    { m: 'Month 1', t: 'Business Fundamentals', items: ['Learn accounting basics (Tally)', 'Study market & consumer behaviour', 'Watch startup documentaries'] },
+                    { m: 'Month 2', t: 'Management Pathways', items: ['BBA / B.Com / MBA research', 'CAT / MAT / CMAT awareness', 'Case study reading'] },
+                    { m: 'Month 3', t: 'Entrepreneurship Skills', items: ['Design Thinking workshop', 'Identify a local problem to solve', 'Build a simple business model'] },
+                    { m: 'Month 4', t: 'Digital & Finance', items: ['Learn MS Excel & Google Sheets', 'Understand GST, taxation basics', 'Social media marketing basics'] },
+                    { m: 'Month 5', t: 'Networking & Mentorship', items: ['Join youth entrepreneurship clubs', 'Find a local business mentor', 'Participate in startup competitions'] },
+                    { m: 'Month 6', t: 'Pilot Your Idea', items: ['Launch a small venture or side project', 'Get user feedback', 'Apply for college business incubators'] }
+                ]
+            },
+            {
+                id: 'law', title: 'Lawyer / Legal Professional', score: 85, demand: 'High', salary: '₹4L – ₹20L/yr',
+                gradient: 'linear-gradient(135deg,#8b5cf6,#a78bfa)',
+                desc: 'Interpret the law, fight for justice, and protect rights. This career is ideal for students with strong reading, writing, and logical argumentation abilities from any stream.',
+                missing: ['CLAT Preparation', 'Legal Reasoning', 'General Knowledge', 'English Proficiency'],
+                roadmap: [
+                    { m: 'Month 1', t: 'CLAT Preparation', items: ['Understand CLAT syllabus', 'Start reading newspapers daily', 'English comprehension practice'] },
+                    { m: 'Month 2', t: 'Law School Research', items: ['Top NLUs in India', '5-year BA LLB vs 3-year LLB', 'Scholarship & fee structures'] },
+                    { m: 'Month 3', t: 'Critical Thinking', items: ['Debate & moot court practice', 'Study landmark Indian court cases', 'Logical reasoning tests'] },
+                    { m: 'Month 4', t: 'Specialisations', items: ['Criminal law vs Corporate law', 'Human rights, IPR, Cyber law', 'Interview law professionals'] },
+                    { m: 'Month 5', t: 'Mock Tests & GK', items: ['Full-length CLAT mock exams', 'Current affairs capsule', 'Static GK revision'] },
+                    { m: 'Month 6', t: 'Internship & Admission', items: ['Court internship', 'Application & counselling', 'Personal statement writing'] }
+                ]
+            },
+            {
+                id: 'arts-media', title: 'Creative Professional / Journalist', score: 83, demand: 'Medium', salary: '₹3L – ₹15L/yr',
+                gradient: 'linear-gradient(135deg,#ec4899,#f43f5e)',
+                desc: 'Create, communicate and inspire — in film, writing, design, journalism or advertising. Arts, Humanities and creative students shine in this field.',
+                missing: ['Portfolio building', 'Digital tools (Canva, Premiere)', 'Communication skills', 'Content writing'],
+                roadmap: [
+                    { m: 'Month 1', t: 'Find Your Medium', items: ['Explore: writing, film, design, music', 'Start a blog or Instagram creative page', 'Complete a beginner Canva / Figma course'] },
+                    { m: 'Month 2', t: 'College Research', items: ['FTII, Xavier Mass Comm, Symbiosis', 'BA Journalism, Fine Arts, Design', 'Entrance tests: NID, NIFT, IIMC'] },
+                    { m: 'Month 3', t: 'Skill Development', items: ['Learn video editing (CapCut / Premiere)', 'Write 5 short articles or stories', 'Study design principles'] },
+                    { m: 'Month 4', t: 'Build Portfolio', items: ['Create 3–5 portfolio pieces', 'Submit to school magazines / YouTube', 'Seek feedback from creators'] },
+                    { m: 'Month 5', t: 'Internship & Networking', items: ['Intern at a local newspaper or studio', 'Follow industry professionals online', 'Attend creative workshops'] },
+                    { m: 'Month 6', t: 'Launch & Apply', items: ['Finalise portfolio website', 'Apply for college admissions', 'Enter design or writing competitions'] }
+                ]
+            },
+            {
+                id: 'civil-services', title: 'Civil Servant / Government Officer', score: 80, demand: 'High', salary: '₹6L – ₹18L/yr',
+                gradient: 'linear-gradient(135deg,#14b8a6,#0d9488)',
+                desc: 'Serve the nation, lead communities and shape policy. Suitable for students from all streams who are passionate about making a difference through governance.',
+                missing: ['UPSC / MPSC Syllabus', 'History & Polity', 'General Studies', 'Essay & Interview Skills'],
+                roadmap: [
+                    { m: 'Month 1', t: 'UPSC/MPSC Awareness', items: ['Understand the exam structure', 'Download official syllabus', 'Study daily for 2–3 hours'] },
+                    { m: 'Month 2', t: 'Graduation Planning', items: ['Choose a supportive degree (History, Pol. Science, Geography)', 'Build reading habit: The Hindu daily', 'Start NCERT revision (6th–12th)'] },
+                    { m: 'Month 3', t: 'Core Subjects', items: ['Indian History & Culture', 'Polity & Constitution', 'Geography foundation'] },
+                    { m: 'Month 4', t: 'Current Affairs & Ethics', items: ['Monthly current affairs notes', 'Ethics & Public Administration basics', 'Study India Yearbook'] },
+                    { m: 'Month 5', t: 'Practice Answer Writing', items: ['Write 3 answers every day', 'Evaluate with feedback', 'Mock test series'] },
+                    { m: 'Month 6', t: 'Interview Readiness', items: ['Personality development sessions', 'Mock interviews', 'State vs Central services planning'] }
+                ]
+            },
+        ];
+
+        // ====== NAVIGATION ======
+        function goTo(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${page}`).classList.add('active');
+            window.scrollTo(0, 0);
+            if (page === 'assessment') renderAssessment();
+            if (page === 'dashboard') startDashboard();
+        }
+
+        // ====== THEME ======
+        function toggleTheme() {
+            isDark = !isDark;
+            const body = document.getElementById('body');
+            const html = document.documentElement;
+            const sun = document.getElementById('sunIcon');
+            const moon = document.getElementById('moonIcon');
+            const label = document.getElementById('themeLabel');
+            const navbar = document.getElementById('navbar');
+            if (isDark) {
+                html.classList.add('dark');
+                body.classList.remove('light-mode');
+                body.style.background = '#020617';
+                body.style.color = '#f1f5f9';
+                navbar.style.background = 'rgba(2,6,23,0.8)';
+                sun.classList.remove('hidden');
+                moon.classList.add('hidden');
+                label.textContent = 'Switch to Light Mode';
+            } else {
+                html.classList.remove('dark');
+                body.classList.add('light-mode');
+                body.style.background = '#f1f5f9';
+                body.style.color = '#0f172a';
+                navbar.style.background = 'rgba(255,255,255,0.9)';
+                sun.classList.add('hidden');
+                moon.classList.remove('hidden');
+                label.textContent = 'Switch to Dark Mode';
+            }
+        }
+
+        // ====== MOBILE MENU ======
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        }
+
+        // ====== ASSESSMENT ======
+        function toggleSkill(list, val, el) {
+            const idx = assessmentData[list].indexOf(val);
+            if (idx > -1) {
+                assessmentData[list].splice(idx, 1);
+                el.classList.remove('selected');
+                if (list === 'interests') el.classList.remove('interest-chip');
+            } else {
+                assessmentData[list].push(val);
+                el.classList.add('selected');
+                if (list === 'interests') el.classList.add('interest-chip');
+            }
+        }
+
+        function renderAssessment() {
+            const container = document.getElementById('assessmentContent');
+            const totalSteps = 5;
+            const pct = Math.round((assessmentStep / totalSteps) * 100);
+            const dots = [1, 2, 3, 4, 5].map(i => `<div class="progress-dot ${i <= assessmentStep ? 'done' : ''}"></div>`).join('');
+
+            let stepContent = '';
+
+            // ---- STEP 1: Student Profile ----
+            if (assessmentStep === 1) {
+                const p = assessmentData.studentProfile;
+                const streams = ['PCM (Physics, Chemistry, Maths)', 'PCB (Physics, Chemistry, Biology)', 'PCMB (All Science)', 'Commerce (Accounts, Economics)', 'Arts / Humanities', 'Vocational / ITI'];
+                const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Economics', 'Accountancy', 'History', 'Geography', 'English Literature', 'Psychology', 'Art & Design'];
+                stepContent = `
+                  <h2 class="text-3xl font-bold mb-1">Tell Us About You 👋</h2>
+                  <p class="text-slate-400 mb-8 muted">Let's personalise your career recommendations based on your academic background.</p>
+                  <div class="space-y-6">
+                    <div>
+                      <label class="block text-sm font-semibold mb-2 text-slate-300">Full Name</label>
+                      <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">👤</span>
+                        <input id="inp_name" class="input-field" type="text" placeholder="e.g. Anvi Pawar" value="${p.name || ''}" oninput="assessmentData.studentProfile.name=this.value" />
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold mb-2 text-slate-300">12th Standard Stream</label>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${streams.map(s => `
+                          <div onclick="selectStream('${s}',this)" class="stream-option cursor-pointer px-5 py-3 rounded-xl border transition-all text-sm font-medium
+                            ${p.stream === s ? 'border-sky-400 text-sky-400' : 'border-white/10 text-slate-400 hover:border-white/25'}"
+                            style="${p.stream === s ? 'background:rgba(56,189,248,0.08)' : ''}">
+                            ${s}
+                          </div>`).join('')}
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold mb-2 text-slate-300">Favourite Subject</label>
+                      <div class="flex flex-wrap gap-2">
+                        ${subjects.map(s => `
+                          <div onclick="selectSubject('${s}',this)" class="subject-option cursor-pointer px-4 py-2 rounded-full border text-sm font-medium transition-all
+                            ${p.favouriteSubject === s ? 'border-purple-400 text-purple-400' : 'border-white/10 text-slate-400 hover:border-white/25'}"
+                            style="${p.favouriteSubject === s ? 'background:rgba(168,85,247,0.08)' : ''}">
+                            ${s}
+                          </div>`).join('')}
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold mb-2 text-slate-300">12th Board Rank / Percentage</label>
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                        <div class="relative">
+                          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">🏅</span>
+                          <input id="inp_rank" class="input-field" type="number" placeholder="Class Rank (e.g. 5)" min="1" value="${p.rank || ''}" oninput="assessmentData.studentProfile.rank=this.value" />
+                        </div>
+                        <div class="relative">
+                          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">📊</span>
+                          <input id="inp_pct" class="input-field" type="number" placeholder="Percentage (e.g. 92)" min="1" max="100" value="${p.percentage || ''}" oninput="assessmentData.studentProfile.percentage=this.value" />
+                        </div>
+                      </div>
+                      <p class="text-xs text-slate-500 mt-2 muted">Enter at least one — rank or percentage.</p>
+                    </div>
+                  </div>`;
+
+                // ---- STEP 2: Technical Skills ----
+            } else if (assessmentStep === 2) {
+                const chips = techSkills.map(s => {
+                    const sel = assessmentData.techSkills.includes(s);
+                    return `<div class="skill-chip ${sel ? 'selected' : ''}" onclick="toggleSkill('techSkills','${s}',this)">${s}</div>`;
+                }).join('');
+                stepContent = `<h2 class="text-3xl font-bold mb-2">Subject Strengths 📚</h2>
+    <p class="text-slate-400 mb-8 muted">Which subjects or knowledge areas are you strongest in? Select all that apply — across any stream.</p>
+    <div class="flex flex-wrap gap-3">${chips}</div>`;
+            } else if (assessmentStep === 3) {
+                const chips = softSkills.map(s => {
+                    const sel = assessmentData.softSkills.includes(s);
+                    return `<div class="skill-chip ${sel ? 'selected' : ''}" style="${sel ? 'border-color:#a855f7;color:#a855f7;background:rgba(168,85,247,0.1)' : ''}" onclick="toggleSoft('${s}',this)">${s}</div>`;
+                }).join('');
+                stepContent = `<h2 class="text-3xl font-bold mb-2">Your Strengths 🤝</h2>
+    <p class="text-slate-400 mb-8 muted">Everyone has interpersonal superpowers — which of these best describe you?</p>
+    <div class="flex flex-wrap gap-3">${chips}</div>`;
+            } else if (assessmentStep === 4) {
+                const chips = interests.map(s => {
+                    const sel = assessmentData.interests.includes(s);
+                    return `<div class="skill-chip interest-chip ${sel ? 'selected' : ''}" style="${sel ? 'border-color:#22d3ee;color:#22d3ee;background:rgba(34,211,238,0.1)' : ''}" onclick="toggleInterest('${s}',this)">${s}</div>`;
+                }).join('');
+                stepContent = `<h2 class="text-3xl font-bold mb-2">Career Interests 🌏</h2>
+    <p class="text-slate-400 mb-8 muted">Which fields or industries excite you most? Choose as many as you like — we'll find your best fit.</p>
+    <div class="flex flex-wrap gap-3">${chips}</div>`;
+            } else {
+                const p = assessmentData.studentProfile;
+                stepContent = `<div class="text-center py-4">
+      <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl" style="background:rgba(56,189,248,0.1)">✓</div>
+      <h2 class="text-3xl font-bold mb-2">Ready for Analysis, ${p.name ? '<span style="color:#38bdf8">' + p.name + '</span>' : 'Student'}!</h2>
+      <p class="text-slate-400 max-w-md mx-auto mb-8 muted">We've gathered all we need. Click below to see your personalised career results.</p>
+      <div class="glass-card p-6 max-w-sm mx-auto text-left space-y-3">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Your Profile</div>
+        <div class="flex justify-between text-sm"><span class="text-slate-400 muted">👤 Name</span><span class="font-bold">${p.name || '—'}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-400 muted">🎓 Stream</span><span class="font-bold text-right" style="max-width:55%;font-size:0.78rem">${p.stream || '—'}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-400 muted">📖 Favourite</span><span class="font-bold" style="color:#a855f7">${p.favouriteSubject || '—'}</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-400 muted">🏅 Rank / %</span><span class="font-bold" style="color:#38bdf8">${p.rank ? 'Rank ' + p.rank : ''}${p.rank && p.percentage ? ' · ' : ''}${p.percentage ? p.percentage + '%' : ''}${!p.rank && !p.percentage ? '—' : ''}</span></div>
+        <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:0.75rem;margin-top:0.5rem"></div>
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Skills Selected</div>
+        <div class="flex justify-between text-sm"><span class="text-slate-400 muted">Technical Skills</span><span class="font-bold" style="color:#38bdf8">${assessmentData.techSkills.length} selected</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-400 muted">Soft Skills</span><span class="font-bold" style="color:#a855f7">${assessmentData.softSkills.length} selected</span></div>
+        <div class="flex justify-between text-sm"><span class="text-slate-400 muted">Interests</span><span class="font-bold" style="color:#22d3ee">${assessmentData.interests.length} selected</span></div>
+      </div>
+    </div>`;
+            }
+
+            container.innerHTML = `
+    <div class="mb-10">
+      <div class="flex justify-between text-sm mb-3"><span style="color:#38bdf8" class="font-semibold">Step ${assessmentStep} of 5</span><span class="text-slate-500">${pct}% Complete</span></div>
+      <div class="h-2 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.05)">
+        <div class="h-full rounded-full transition-all duration-700" style="width:${pct}%;background:linear-gradient(90deg,#38bdf8,#a855f7)"></div>
+      </div>
+      <div class="flex gap-2 mt-3 justify-center">${dots}</div>
+    </div>
+    <div class="fade-up">${stepContent}</div>
+    <div class="flex items-center justify-between mt-12">
+      <button onclick="assessPrev()" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors ${assessmentStep === 1 ? 'invisible' : ''} px-4 py-2">← Back</button>
+      <button onclick="assessNext()" class="btn-primary flex items-center gap-2">
+        ${assessmentStep === 5 ? 'See My Results 🚀' : 'Continue →'}
+      </button>
+    </div>
+  `;
+        }
+
+        function selectStream(val, el) {
+            assessmentData.studentProfile.stream = val;
+            document.querySelectorAll('.stream-option').forEach(e => {
+                e.style.cssText = ''; e.classList.remove('border-sky-400', 'text-sky-400');
+                e.style.borderColor = 'rgba(255,255,255,0.1)'; e.style.color = 'rgb(148,163,184)';
+            });
+            el.style.cssText = 'background:rgba(56,189,248,0.08);border-color:#38bdf8;color:#38bdf8';
+        }
+        function selectSubject(val, el) {
+            assessmentData.studentProfile.favouriteSubject = val;
+            document.querySelectorAll('.subject-option').forEach(e => {
+                e.style.cssText = ''; e.style.borderColor = 'rgba(255,255,255,0.1)'; e.style.color = 'rgb(148,163,184)';
+            });
+            el.style.cssText = 'background:rgba(168,85,247,0.08);border-color:#a855f7;color:#a855f7';
+        }
+        function toggleSoft(val, el) {
+            const idx = assessmentData.softSkills.indexOf(val);
+            if (idx > -1) { assessmentData.softSkills.splice(idx, 1); el.style.cssText = ''; el.classList.remove('selected'); }
+            else { assessmentData.softSkills.push(val); el.style.cssText = 'border-color:#a855f7;color:#a855f7;background:rgba(168,85,247,0.1)'; el.classList.add('selected'); }
+        }
+        function toggleInterest(val, el) {
+            const idx = assessmentData.interests.indexOf(val);
+            if (idx > -1) { assessmentData.interests.splice(idx, 1); el.style.cssText = ''; el.classList.remove('selected'); }
+            else { assessmentData.interests.push(val); el.style.cssText = 'border-color:#22d3ee;color:#22d3ee;background:rgba(34,211,238,0.1)'; el.classList.add('selected'); }
+        }
+        function assessNext() {
+            if (assessmentStep < 5) { assessmentStep++; renderAssessment(); }
+            else goTo('dashboard');
+        }
+        function assessPrev() {
+            if (assessmentStep > 1) { assessmentStep--; renderAssessment(); }
+        }
+
+        // ====== CAREER SCORING ENGINE ======
+        function computeCareerScores() {
+            const d = assessmentData;
+            const stream = d.studentProfile.stream || '';
+            const favSubject = d.studentProfile.favouriteSubject || '';
+
+            // Base score per career (all start equal)
+            const scores = { engineer: 0, medicine: 0, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 };
+
+            // ---- STREAM WEIGHT (40 pts max) ----
+            const streamMap = {
+                'PCM (Physics, Chemistry, Maths)': { engineer: 40, medicine: 5, business: 5, law: 5, 'arts-media': 0, 'civil-services': 10 },
+                'PCB (Physics, Chemistry, Biology)': { engineer: 5, medicine: 40, business: 5, law: 5, 'arts-media': 0, 'civil-services': 10 },
+                'PCMB (All Science)': { engineer: 30, medicine: 35, business: 5, law: 5, 'arts-media': 0, 'civil-services': 10 },
+                'Commerce (Accounts, Economics)': { engineer: 0, medicine: 0, business: 40, law: 15, 'arts-media': 10, 'civil-services': 15 },
+                'Arts / Humanities': { engineer: 0, medicine: 0, business: 10, law: 25, 'arts-media': 40, 'civil-services': 25 },
+                'Vocational / ITI': { engineer: 20, medicine: 5, business: 15, law: 5, 'arts-media': 10, 'civil-services': 10 },
+            };
+            const sm = streamMap[stream] || {};
+            for (const k in sm) scores[k] = (scores[k] || 0) + (sm[k] || 0);
+
+            // ---- INTEREST WEIGHT (up to 30 pts, 10 per match) ----
+            const interestMap = {
+                'Engineering & Technology': { engineer: 10, medicine: 0, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Medicine & Healthcare': { engineer: 0, medicine: 10, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Business & Entrepreneurship': { engineer: 0, medicine: 0, business: 10, law: 5, 'arts-media': 5, 'civil-services': 0 },
+                'Arts, Media & Design': { engineer: 0, medicine: 0, business: 0, law: 0, 'arts-media': 10, 'civil-services': 0 },
+                'Law & Justice': { engineer: 0, medicine: 0, business: 0, law: 10, 'arts-media': 0, 'civil-services': 5 },
+                'Teaching & Education': { engineer: 0, medicine: 0, business: 0, law: 0, 'arts-media': 5, 'civil-services': 5 },
+                'Government & Civil Services': { engineer: 0, medicine: 0, business: 0, law: 5, 'arts-media': 0, 'civil-services': 10 },
+                'Finance & Banking': { engineer: 0, medicine: 0, business: 10, law: 5, 'arts-media': 0, 'civil-services': 0 },
+                'Agriculture & Environment': { engineer: 5, medicine: 5, business: 0, law: 0, 'arts-media': 0, 'civil-services': 5 },
+                'Journalism & Mass Communication': { engineer: 0, medicine: 0, business: 0, law: 0, 'arts-media': 10, 'civil-services': 0 },
+                'Sports & Physical Fitness': { engineer: 0, medicine: 5, business: 0, law: 0, 'arts-media': 5, 'civil-services': 5 },
+                'Social Work & NGOs': { engineer: 0, medicine: 5, business: 0, law: 5, 'arts-media': 5, 'civil-services': 10 },
+                'Architecture & Urban Planning': { engineer: 10, medicine: 0, business: 5, law: 0, 'arts-media': 5, 'civil-services': 0 },
+                'Research & Academia': { engineer: 7, medicine: 7, business: 0, law: 5, 'arts-media': 5, 'civil-services': 0 },
+                'Defence & Armed Forces': { engineer: 5, medicine: 0, business: 0, law: 0, 'arts-media': 0, 'civil-services': 10 },
+                'Hospitality & Tourism': { engineer: 0, medicine: 0, business: 8, law: 0, 'arts-media': 7, 'civil-services': 0 },
+            };
+            d.interests.forEach(i => {
+                const im = interestMap[i] || {};
+                for (const k in im) scores[k] = (scores[k] || 0) + (im[k] || 0);
+            });
+
+            // ---- SUBJECT STRENGTH WEIGHT (up to 20 pts, 5 per match) ----
+            const subjectMap = {
+                'Mathematics & Statistics': { engineer: 5, medicine: 0, business: 3, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Science (Physics / Chemistry)': { engineer: 5, medicine: 3, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Biology & Life Sciences': { engineer: 0, medicine: 5, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Computer Science & Coding': { engineer: 5, medicine: 0, business: 2, law: 0, 'arts-media': 2, 'civil-services': 0 },
+                'Accountancy & Finance': { engineer: 0, medicine: 0, business: 5, law: 2, 'arts-media': 0, 'civil-services': 0 },
+                'Economics & Business Studies': { engineer: 0, medicine: 0, business: 5, law: 2, 'arts-media': 0, 'civil-services': 2 },
+                'History, Civics & Political Science': { engineer: 0, medicine: 0, business: 0, law: 4, 'arts-media': 2, 'civil-services': 5 },
+                'Geography & Environment': { engineer: 2, medicine: 0, business: 0, law: 0, 'arts-media': 0, 'civil-services': 4 },
+                'English Language & Literature': { engineer: 0, medicine: 0, business: 2, law: 4, 'arts-media': 5, 'civil-services': 3 },
+                'Art, Design & Creativity': { engineer: 0, medicine: 0, business: 2, law: 0, 'arts-media': 5, 'civil-services': 0 },
+                'Engineering Drawing / CAD': { engineer: 5, medicine: 0, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Health Science & Nursing': { engineer: 0, medicine: 5, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Psychology & Sociology': { engineer: 0, medicine: 3, business: 2, law: 3, 'arts-media': 3, 'civil-services': 3 },
+                'Agriculture & Environmental Science': { engineer: 2, medicine: 2, business: 0, law: 0, 'arts-media': 0, 'civil-services': 2 },
+                'Law & Legal Studies': { engineer: 0, medicine: 0, business: 2, law: 5, 'arts-media': 0, 'civil-services': 3 },
+                'Sports Science & Physical Education': { engineer: 0, medicine: 2, business: 0, law: 0, 'arts-media': 2, 'civil-services': 2 },
+            };
+            d.techSkills.forEach(s => {
+                const sm2 = subjectMap[s] || {};
+                for (const k in sm2) scores[k] = (scores[k] || 0) + (sm2[k] || 0);
+            });
+
+            // ---- SOFT SKILL WEIGHT (up to 10 pts) ----
+            const softMap = {
+                'Leadership': { engineer: 2, medicine: 0, business: 4, law: 2, 'arts-media': 0, 'civil-services': 3 },
+                'Empathy & Emotional Intelligence': { engineer: 0, medicine: 4, business: 0, law: 2, 'arts-media': 2, 'civil-services': 2 },
+                'Research & Analysis': { engineer: 3, medicine: 3, business: 2, law: 3, 'arts-media': 2, 'civil-services': 2 },
+                'Presentation & Public Speaking': { engineer: 0, medicine: 2, business: 3, law: 4, 'arts-media': 4, 'civil-services': 3 },
+                'Critical Thinking': { engineer: 3, medicine: 2, business: 2, law: 4, 'arts-media': 0, 'civil-services': 2 },
+                'Communication': { engineer: 0, medicine: 2, business: 3, law: 3, 'arts-media': 4, 'civil-services': 3 },
+                'Creativity & Innovation': { engineer: 2, medicine: 0, business: 3, law: 0, 'arts-media': 5, 'civil-services': 0 },
+                'Problem Solving': { engineer: 4, medicine: 2, business: 3, law: 2, 'arts-media': 0, 'civil-services': 2 },
+                'Teamwork & Collaboration': { engineer: 2, medicine: 2, business: 2, law: 0, 'arts-media': 2, 'civil-services': 2 },
+                'Decision Making': { engineer: 2, medicine: 2, business: 4, law: 2, 'arts-media': 0, 'civil-services': 3 },
+                'Adaptability': { engineer: 2, medicine: 2, business: 2, law: 0, 'arts-media': 3, 'civil-services': 2 },
+                'Time Management': { engineer: 2, medicine: 2, business: 2, law: 2, 'arts-media': 2, 'civil-services': 2 },
+            };
+            d.softSkills.forEach(s => {
+                const sm3 = softMap[s] || {};
+                for (const k in sm3) scores[k] = (scores[k] || 0) + (sm3[k] || 0);
+            });
+
+            // ---- FAVOURITE SUBJECT BONUS (5 pts) ----
+            const favMap = {
+                'Mathematics': { engineer: 5, medicine: 0, business: 2, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Physics': { engineer: 5, medicine: 2, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Chemistry': { engineer: 3, medicine: 4, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Biology': { engineer: 0, medicine: 5, business: 0, law: 0, 'arts-media': 0, 'civil-services': 0 },
+                'Computer Science': { engineer: 5, medicine: 0, business: 2, law: 0, 'arts-media': 2, 'civil-services': 0 },
+                'Economics': { engineer: 0, medicine: 0, business: 5, law: 2, 'arts-media': 0, 'civil-services': 2 },
+                'Accountancy': { engineer: 0, medicine: 0, business: 5, law: 2, 'arts-media': 0, 'civil-services': 0 },
+                'History': { engineer: 0, medicine: 0, business: 0, law: 3, 'arts-media': 3, 'civil-services': 5 },
+                'Geography': { engineer: 2, medicine: 0, business: 0, law: 0, 'arts-media': 2, 'civil-services': 4 },
+                'English Literature': { engineer: 0, medicine: 0, business: 2, law: 4, 'arts-media': 5, 'civil-services': 2 },
+                'Psychology': { engineer: 0, medicine: 3, business: 2, law: 3, 'arts-media': 3, 'civil-services': 2 },
+                'Art & Design': { engineer: 0, medicine: 0, business: 0, law: 0, 'arts-media': 5, 'civil-services': 0 },
+            };
+            const fm = favMap[favSubject] || {};
+            for (const k in fm) scores[k] = (scores[k] || 0) + (fm[k] || 0);
+
+            // Normalise to 0–99 scale relative to max possible
+            const maxRaw = Math.max(...Object.values(scores));
+            const normalised = {};
+            for (const k in scores) {
+                // Scale so max becomes 97, minimum is 32 so even bottom career shows decent
+                normalised[k] = maxRaw > 0
+                    ? Math.min(99, Math.max(32, Math.round(32 + (scores[k] / maxRaw) * 67)))
+                    : 50;
+            }
+            return normalised;
+        }
+
+        // ====== BRANCH RECOMMENDATION ENGINE ======
+        function recommendBranches() {
+            const stream = assessmentData.studentProfile.stream || '';
+            const subjects = assessmentData.techSkills;
+            const interests = assessmentData.interests;
+            const has = (arr, ...vals) => vals.some(v => arr.some(a => a.toLowerCase().includes(v.toLowerCase())));
+
+            const branchSets = {
+                'PCM': [
+                    {
+                        branch: 'Computer Science & Engineering', degree: 'B.E. / B.Tech CSE', icon: '💻', color: '#0ea5e9',
+                        reason: 'You show strong aptitude for Mathematics and logical thinking — perfect for coding, AI, and software systems.',
+                        careers: ['Software Engineer', 'Data Scientist', 'AI Engineer', 'Web Developer'],
+                        exam: 'JEE / MHT-CET', weight: (has(subjects, 'computer', 'maths') || has(interests, 'engineering', 'technology')) ? 10 : 5
+                    },
+                    {
+                        branch: 'Mechanical Engineering', degree: 'B.E. / B.Tech Mechanical', icon: '⚙️', color: '#f59e0b',
+                        reason: 'Mechanics, physics and problem-solving are your strengths — ideal for designing machines, automobiles and robotics.',
+                        careers: ['Mechanical Engineer', 'Automobile Designer', 'Robotics Engineer', 'CAD Engineer'],
+                        exam: 'JEE / MHT-CET', weight: has(subjects, 'physics', 'mechanical', 'cad') ? 9 : 4
+                    },
+                    {
+                        branch: 'Electronics & Communication (ECE)', degree: 'B.E. / B.Tech ECE', icon: '🔌', color: '#8b5cf6',
+                        reason: 'A blend of electronics, signals and communication — great for chip design, telecom and embedded systems.',
+                        careers: ['Electronics Engineer', 'VLSI Designer', 'IoT Engineer', 'Telecom Analyst'],
+                        exam: 'JEE / MHT-CET', weight: has(subjects, 'physics', 'electronics') ? 8 : 4
+                    },
+                    {
+                        branch: 'Civil Engineering', degree: 'B.E. / B.Tech Civil', icon: '🏗️', color: '#10b981',
+                        reason: 'Perfect for students interested in construction, infrastructure, and urban development.',
+                        careers: ['Structural Engineer', 'Urban Planner', 'Project Manager', 'Environmental Engineer'],
+                        exam: 'JEE / MHT-CET', weight: has(interests, 'architecture', 'urban') ? 9 : 3
+                    },
+                    {
+                        branch: 'Electrical Engineering (EE)', degree: 'B.E. / B.Tech EE', icon: '⚡', color: '#f43f5e',
+                        reason: 'Power systems, renewable energy and circuits — a stable branch with strong govt & private demand.',
+                        careers: ['Electrical Engineer', 'Power Plant Engineer', 'Energy Auditor', 'Control Systems Eng'],
+                        exam: 'JEE / MHT-CET', weight: has(subjects, 'electrical', 'physics') ? 7 : 3
+                    },
+                    {
+                        branch: 'Data Science & AI', degree: 'B.Tech Data Science / AI', icon: '🤖', color: '#22d3ee',
+                        reason: 'If you love statistics and patterns, Data Science and AI is the fastest-growing tech career globally.',
+                        careers: ['Data Analyst', 'ML Engineer', 'Business Intelligence', 'AI Researcher'],
+                        exam: 'JEE / Private Univ. Entrance', weight: has(interests, 'research', 'technology') ? 9 : 4
+                    },
+                ],
+                'PCB': [
+                    {
+                        branch: 'MBBS – Medicine', degree: 'MBBS (Bachelor of Medicine)', icon: '🩺', color: '#10b981',
+                        reason: 'The most direct path to becoming a doctor. If you scored well in Biology and Chemistry, MBBS is your calling.',
+                        careers: ['General Physician', 'Surgeon', 'Specialist Doctor', 'Medical Researcher'],
+                        exam: 'NEET-UG', weight: has(interests, 'medicine', 'healthcare') ? 10 : 7
+                    },
+                    {
+                        branch: 'B.Pharm – Pharmacy', degree: 'Bachelor of Pharmacy', icon: '💊', color: '#8b5cf6',
+                        reason: 'Combine chemistry and biology to develop medicines. Excellent scope in MNCs like Cipla, Sun Pharma.',
+                        careers: ['Pharmacist', 'Drug Inspector', 'R&D Scientist', 'Clinical Researcher'],
+                        exam: 'NEET / State CET', weight: has(subjects, 'chemistry', 'biology') ? 8 : 5
+                    },
+                    {
+                        branch: 'B.Sc Biotechnology / Bioinformatics', degree: 'B.Sc Biotechnology', icon: '🧬', color: '#0ea5e9',
+                        reason: 'Cutting-edge field combining biology with technology — work in genetic engineering, vaccines, and biotech startups.',
+                        careers: ['Biotechnologist', 'Genetic Researcher', 'Bioinformatics Analyst', 'Lab Scientist'],
+                        exam: 'NEET / CUET', weight: has(interests, 'research', 'academia') ? 9 : 5
+                    },
+                    {
+                        branch: 'BDS – Dental Surgery', degree: 'Bachelor of Dental Surgery', icon: '🦷', color: '#f59e0b',
+                        reason: 'Shorter pathway than MBBS with similar prestige. High earning potential with private practice.',
+                        careers: ['Dentist', 'Orthodontist', 'Oral Surgeon', 'Prosthodontist'],
+                        exam: 'NEET-UG', weight: 5
+                    },
+                    {
+                        branch: 'B.Sc Nursing', degree: 'Bachelor of Nursing', icon: '🏥', color: '#f43f5e',
+                        reason: 'High demand in India and abroad. Nurses are the backbone of healthcare with great job security.',
+                        careers: ['Registered Nurse', 'ICU Nurse', 'Nursing Manager', 'International Healthcare'],
+                        exam: 'NEET / State Nursing CET', weight: has(subjects, 'health', 'nursing') ? 8 : 4
+                    },
+                ],
+                'Commerce': [
+                    {
+                        branch: 'CA – Chartered Accountancy', degree: 'CA Foundation → Intermediate → Final', icon: '📊', color: '#f59e0b',
+                        reason: 'India\'s most prestigious finance qualification. If Accountancy and Finance are your strengths, CA is the gold standard.',
+                        careers: ['Chartered Accountant', 'Tax Consultant', 'CFO', 'Financial Auditor'],
+                        exam: 'ICAI CA Foundation', weight: has(subjects, 'accountancy', 'finance') ? 10 : 6
+                    },
+                    {
+                        branch: 'BBA / MBA – Business Management', degree: 'BBA then MBA', icon: '💼', color: '#0ea5e9',
+                        reason: 'Build management, leadership and entrepreneurship skills. MBA from top B-School opens massive doors.',
+                        careers: ['Business Manager', 'Marketing Head', 'HR Manager', 'Startup Founder'],
+                        exam: 'IPMAT / CAT / XAT for MBA', weight: has(interests, 'business', 'entrepreneurship') ? 10 : 6
+                    },
+                    {
+                        branch: 'B.Com – Commerce Graduate', degree: 'Bachelor of Commerce', icon: '🏦', color: '#10b981',
+                        reason: 'Broad foundation in commerce, economics, and taxation. Great entry point for CA, CS, or MBA pathways.',
+                        careers: ['Accountant', 'Tax Analyst', 'Banking Officer', 'Finance Executive'],
+                        exam: 'CUET / Direct Admission', weight: 7
+                    },
+                    {
+                        branch: 'CS – Company Secretary', degree: 'CS Foundation → Executive → Professional', icon: '⚖️', color: '#8b5cf6',
+                        reason: 'Legal-corporate interface career. CS professionals are in high demand in every public limited company.',
+                        careers: ['Company Secretary', 'Corporate Lawyer', 'Compliance Officer', 'Board Secretary'],
+                        exam: 'ICSI CS Foundation', weight: has(subjects, 'law', 'economics') ? 8 : 5
+                    },
+                    {
+                        branch: 'CFA / Finance Analyst', degree: 'BBA Finance + CFA Certification', icon: '📈', color: '#f43f5e',
+                        reason: 'Investment banking, portfolio management and equity research — high salary potential in global finance.',
+                        careers: ['Investment Banker', 'Portfolio Manager', 'Equity Analyst', 'Risk Manager'],
+                        exam: 'IPMAT / CUET + CFA Exam', weight: has(interests, 'finance', 'banking') ? 9 : 5
+                    },
+                ],
+                'Arts': [
+                    {
+                        branch: 'BA LLB – Law', degree: '5-year Integrated BA LLB', icon: '⚖️', color: '#8b5cf6',
+                        reason: 'If you love debates, history and logical arguments — law is a prestigious and growing field in India.',
+                        careers: ['Advocate', 'Judge', 'Corporate Lawyer', 'Human Rights Lawyer'],
+                        exam: 'CLAT / MH-CET Law', weight: has(interests, 'law', 'justice') ? 10 : 6
+                    },
+                    {
+                        branch: 'BA Political Science / UPSC Prep', degree: 'BA + UPSC/MPSC Preparation', icon: '🏛', color: '#0ea5e9',
+                        reason: 'Gateway to IAS/IPS and civil services. Political Science gives you the perfect foundation for governance.',
+                        careers: ['IAS Officer', 'IPS Officer', 'Diplomat', 'Policy Analyst'],
+                        exam: 'UPSC / MPSC', weight: has(interests, 'government', 'civil') ? 10 : 6
+                    },
+                    {
+                        branch: 'Mass Communication / Journalism', degree: 'BA Mass Communication / BJMC', icon: '📰', color: '#f59e0b',
+                        reason: 'For creative minds who love writing, media, and storytelling. Excellent scope in digital, TV and print media.',
+                        careers: ['Journalist', 'News Anchor', 'Content Creator', 'PR Manager', 'Video Editor'],
+                        exam: 'IIMC / Symbiosis / CUET', weight: has(interests, 'journalism', 'media', 'design') ? 10 : 5
+                    },
+                    {
+                        branch: 'Fine Arts / Design', degree: 'BFA / B.Des / NIFT', icon: '🎨', color: '#ec4899',
+                        reason: 'Turn your creativity into a career. Fashion, graphic design, animation and UI/UX are booming fields.',
+                        careers: ['Graphic Designer', 'Fashion Designer', 'Animator', 'UI/UX Designer', 'Illustrator'],
+                        exam: 'NID / NIFT / CEED', weight: has(interests, 'arts', 'media', 'design') ? 9 : 4
+                    },
+                    {
+                        branch: 'Social Work / Psychology', degree: 'BSW / BA Psychology', icon: '🤝', color: '#10b981',
+                        reason: 'Make a real difference in society. NGOs, corporates (HR), and mental health sectors increasingly need these professionals.',
+                        careers: ['Counselor', 'Social Worker', 'HR Executive', 'NGO Manager', 'Therapist'],
+                        exam: 'CUET / University Entrance', weight: has(interests, 'social', 'ngo', 'education') ? 9 : 5
+                    },
+                ],
+            };
+
+            // Detect stream key
+            let key = 'PCM';
+            if (stream.includes('PCB')) key = 'PCB';
+            else if (stream.includes('Commerce')) key = 'Commerce';
+            else if (stream.includes('Arts') || stream.includes('Humanities')) key = 'Arts';
+            else if (stream.includes('PCMB')) key = 'PCM'; // default to engineering for PCMB
+            else if (stream.includes('Vocational') || stream.includes('ITI')) key = 'PCM';
+
+            const branches = branchSets[key] || branchSets['PCM'];
+            return branches.sort((a, b) => b.weight - a.weight).slice(0, 3);
+        }
+
+        // ====== DASHBOARD ======
+        function startDashboard() {
+            const loadEl = document.getElementById('loadingState');
+            const dashEl = document.getElementById('dashboardContent');
+            if (loadEl) { loadEl.style.display = 'flex'; }
+            if (dashEl) { dashEl.classList.add('hidden'); }
+            setTimeout(renderDashboard, 1800);
+        }
+
+        function renderDashboard() {
+            document.getElementById('loadingState').style.display = 'none';
+            const dc = document.getElementById('dashboardContent');
+            dc.classList.remove('hidden');
+
+            // Compute dynamic scores and attach to career objects
+            const scores = computeCareerScores();
+            const ranked = careers
+                .map(c => ({ ...c, score: scores[c.id] ?? c.score }))
+                .sort((a, b) => b.score - a.score);
+
+            const topScore = ranked[0]?.score ?? 80;
+            const top3 = ranked.slice(0, 3);
+
+            // Sidebar: build real skill bars from assessment data
+            const domainPct = Math.min(99, Math.round((assessmentData.techSkills.length / 16) * 100));
+            const softPct = Math.min(99, Math.round((assessmentData.softSkills.length / 12) * 100));
+            const interestPct = Math.min(99, Math.round((assessmentData.interests.length / 16) * 100));
+            const profilePct = assessmentData.studentProfile.name ? 100 : 60;
+            const bars = [
+                ['Domain Knowledge', domainPct, '#38bdf8'],
+                ['Interpersonal Skills', softPct, '#a855f7'],
+                ['Career Clarity', interestPct, '#22d3ee'],
+                ['Profile Complete', profilePct, '#f59e0b'],
+            ];
+
+            dc.innerHTML = `
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      <div>
+        <h1 class="text-4xl font-bold mb-2">Your Career Potential${assessmentData.studentProfile.name ? ', <span style="color:#38bdf8">' + assessmentData.studentProfile.name + '</span>' : ''}</h1>
+        <p class="text-slate-400 muted text-lg">AI analysis based on your stream, subjects, skills & interests.</p>
+      </div>
+      <div class="flex items-center gap-4 p-4 rounded-2xl glass-card">
+        <div class="p-2 rounded-xl text-2xl" style="background:rgba(56,189,248,0.1)">🏆</div>
+        <div>
+          <div class="text-xs text-slate-500 uppercase font-semibold mb-0.5">Overall Match</div>
+          <div class="text-2xl font-extrabold text-gradient" style="font-family:Outfit">${topScore}% Profile Fit</div>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 space-y-5">
+        <h2 class="text-xl font-bold flex items-center gap-2">🎯 Your Top Recommended Paths</h2>
+        ${top3.map((c, i) => `
+          <div class="career-card glass-card p-6 flex flex-col md:flex-row gap-5 fade-up delay-${i}" onclick="showCareer('${c.id}')">
+            <div class="w-full md:w-28 h-24 md:h-auto rounded-2xl flex-shrink-0 flex flex-col items-center justify-center" style="background:${c.gradient};min-width:7rem">
+              <div class="text-3xl font-extrabold text-white" style="font-family:Outfit">${c.score}%</div>
+              <div class="text-white/70 text-xs font-medium">Match</div>
+            </div>
+            <div class="flex-grow">
+              <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+                <h3 class="text-xl font-bold hover:text-sky-400 transition-colors">${c.title}</h3>
+                <span class="text-xs font-semibold px-3 py-1 rounded-full badge" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)">📈 ${c.demand} Demand</span>
+              </div>
+              <p class="text-slate-400 text-sm muted mb-3 line-clamp-2">${c.desc}</p>
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <span class="text-sm">Avg. Salary: <span class="font-semibold">${c.salary}</span></span>
+                <span class="text-sm font-bold" style="color:#38bdf8">View Roadmap →</span>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="space-y-6">
+        <h2 class="text-xl font-bold flex items-center gap-2">📊 Your Profile Breakdown</h2>
+        <div class="glass-card p-6">
+          <div class="space-y-4">
+            ${bars.map(([l, v, col]) => `
+              <div>
+                <div class="flex justify-between text-sm mb-1.5"><span class="text-slate-400 muted">${l}</span><span class="font-semibold">${v}%</span></div>
+                <div class="h-2.5 rounded-full overflow-hidden" style="background:rgba(255,255,255,0.05)">
+                  <div class="h-full rounded-full transition-all duration-1000" style="width:${v}%;background:${col}"></div>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>
+        <div class="glass-card p-6">
+          <h3 class="font-bold mb-4 flex items-center gap-2">⚡ Activity</h3>
+          <div class="space-y-4">
+            <div class="flex gap-3 text-sm">
+              <div class="w-1 h-10 rounded-full" style="background:rgba(56,189,248,0.4)"></div>
+              <div><div class="font-medium">Assessment Completed</div><div class="text-slate-500 text-xs">Just now</div></div>
+            </div>
+            <div class="flex gap-3 text-sm opacity-40">
+              <div class="w-1 h-10 rounded-full" style="background:rgba(255,255,255,0.1)"></div>
+              <div><div class="font-medium">Profile Created</div><div class="text-slate-500 text-xs">${assessmentData.studentProfile.stream || 'Stream not selected'}</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Branch Recommendation Section -->
+    <div class="mt-12">
+      <div class="flex items-center gap-3 mb-6">
+        <div style="width:38px;height:38px;background:linear-gradient(135deg,#f59e0b,#fbbf24);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🌿</div>
+        <div>
+          <h2 class="text-xl font-bold">Which Branch Should You Take?</h2>
+          <p class="text-slate-400 text-sm muted">AI-recommended branches based on your stream, subjects & interests</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        ${recommendBranches().map((b, i) => `
+          <div class="glass-card p-6 fade-up delay-${i}" style="border-top:3px solid ${b.color}">
+            <div style="width:44px;height:44px;background:${b.color}22;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:12px">${b.icon}</div>
+            <div class="flex items-center gap-2 mb-1">
+              <h3 class="font-bold text-lg">${b.branch}</h3>
+              ${i === 0 ? '<span style="font-size:0.7rem;background:#f59e0b22;color:#f59e0b;border:1px solid #f59e0b44;padding:2px 8px;border-radius:20px;font-weight:700">⭐ Best Fit</span>' : ''}
+            </div>
+            <p class="text-xs text-slate-500 muted mb-3">${b.degree}</p>
+            <p class="text-sm text-slate-300 mb-4 leading-relaxed">${b.reason}</p>
+            <div class="text-xs font-semibold mb-1" style="color:${b.color}">Career Paths</div>
+            <div class="flex flex-wrap gap-1 mb-3">
+              ${b.careers.map(car => `<span style="font-size:0.72rem;background:${b.color}15;border:1px solid ${b.color}30;color:${b.color};padding:2px 8px;border-radius:20px">${car}</span>`).join('')}
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:6px;font-size:0.78rem;color:#94a3b8">📝 Entrance: <strong style="color:#e2e8f0">${b.exam}</strong></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+        }
+
+        // ====== CAREER DETAILS ======
+        function showCareer(id) {
+            const c = careers.find(x => x.id === id);
+            if (!c) return;
+            const cc = document.getElementById('careerContent');
+            cc.innerHTML = `
+    <button onclick="goTo('dashboard')" class="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors mb-8 text-sm">← Back to Dashboard</button>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div class="lg:col-span-2 space-y-12">
+        <div>
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4" style="background:${c.gradient}">🚀</div>
+          <h1 class="text-4xl font-bold mb-4">${c.title}</h1>
+          <p class="text-lg text-slate-400 leading-relaxed muted">${c.desc}</p>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold mb-8 flex items-center gap-3">📅 6-Month Mastery Roadmap</h2>
+          <div class="space-y-0">
+            ${c.roadmap.map((r, i) => `
+              <div class="roadmap-item" data-num="${i + 1}">
+                <div class="text-xs font-bold uppercase tracking-wider mb-1" style="color:#38bdf8">${r.m}</div>
+                <h3 class="text-xl font-bold mb-3">${r.t}</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-${r.items.length > 2 ? '3' : '2'} gap-2">
+                  ${r.items.map(item => `<div class="flex items-center gap-2 text-sm text-slate-400 muted"><span style="color:#a855f7;font-size:0.7rem">✓</span>${item}</div>`).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="space-y-6">
+        <div class="glass-card p-6 space-y-5">
+          <h3 class="text-lg font-bold">Quick Insights</h3>
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg text-lg" style="background:rgba(34,197,94,0.1)">💰</div>
+            <div><div class="text-xs text-slate-500 uppercase">Est. Salary</div><div class="font-bold">${c.salary}</div></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg text-lg" style="background:rgba(59,130,246,0.1)">📈</div>
+            <div><div class="text-xs text-slate-500 uppercase">Market Demand</div><div class="font-bold">${c.demand}</div></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="p-2 rounded-lg text-lg" style="background:rgba(168,85,247,0.1)">🎯</div>
+            <div><div class="text-xs text-slate-500 uppercase">Match Score</div><div class="font-bold" style="color:#38bdf8">${c.score}%</div></div>
+          </div>
+          <div class="pt-4 border-t border-white/5">
+            <h4 class="text-sm font-bold mb-3 uppercase tracking-wider text-slate-500">Skill Gap to Bridge</h4>
+            <div class="space-y-2">
+              ${c.missing.map(s => `<div class="flex items-center gap-2 text-sm"><div class="w-1.5 h-1.5 rounded-full" style="background:#a855f7"></div><span>${s}</span></div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="glass-card p-6" style="background:linear-gradient(135deg,rgba(56,189,248,0.05),transparent);border-color:rgba(56,189,248,0.2)">
+          <h3 class="text-lg font-bold mb-3">💡 AI Mentor Tip</h3>
+          <p class="text-sm text-slate-400 muted mb-4">"Focus on 2–3 high-quality projects this month. Real-world code beats 10 certificates every time."</p>
+          <button class="text-sm font-bold flex items-center gap-2" style="color:#38bdf8">Chat with AI Mentor →</button>
+        </div>
+      </div>
+    </div>
+  `;
+            goTo('career');
+        }
+
+        // ====== COLLEGE DATA ======
+        const collegeData = [
+            { name: 'IIT Bombay', location: 'Mumbai', stream: 'PCM', type: 'Government', cutoff: 99, course: 'B.Tech (Various)', url: 'https://www.iitb.ac.in', badge: '🏆 Tier 1' },
+            { name: 'COEP Technological University', location: 'Pune', stream: 'PCM', type: 'Government', cutoff: 85, course: 'B.Tech Engineering', url: 'https://www.coep.org.in', badge: '⭐ Top Govt' },
+            { name: 'VJTI Mumbai', location: 'Mumbai', stream: 'PCM', type: 'Government', cutoff: 80, course: 'B.Tech Engineering', url: 'https://www.vjti.ac.in', badge: '⭐ Top Govt' },
+            { name: 'College of Engineering Pune (COEP)', location: 'Pune', stream: 'PCM', type: 'Government', cutoff: 78, course: 'B.E. Engineering', url: 'https://www.coep.org.in', badge: '⭐ Govt' },
+            { name: 'Walchand College of Engineering', location: 'Sangli', stream: 'PCM', type: 'Autonomous', cutoff: 75, course: 'B.E. Engineering', url: 'https://www.walchandsangli.ac.in', badge: '🎓 Autonomous' },
+            { name: 'PICT Pune', location: 'Pune', stream: 'PCM', type: 'Autonomous', cutoff: 72, course: 'B.E. CS / IT', url: 'https://www.pict.edu', badge: '💻 CS Focus' },
+            { name: 'MIT-WPU Pune', location: 'Pune', stream: 'PCM', type: 'Private', cutoff: 65, course: 'B.Tech / B.E.', url: 'https://mitwpu.edu.in', badge: '🏫 Private' },
+            { name: 'Symbiosis Institute of Technology', location: 'Pune', stream: 'PCM', type: 'Private', cutoff: 70, course: 'B.Tech Engineering', url: 'https://www.sitpune.edu.in', badge: '🏫 Private' },
+            { name: 'D.Y. Patil College of Engineering', location: 'Pune', stream: 'PCM', type: 'Private', cutoff: 60, course: 'B.E. Engineering', url: 'https://www.dypce.ac.in', badge: '🏫 Private' },
+            { name: 'Grant Medical College (Mumbai)', location: 'Mumbai', stream: 'PCB', type: 'Government', cutoff: 95, course: 'MBBS', url: 'https://www.grantmedicalcollege.edu', badge: '🏆 Tier 1 Medical' },
+            { name: 'B.J. Medical College Pune', location: 'Pune', stream: 'PCB', type: 'Government', cutoff: 93, course: 'MBBS', url: 'https://bjmc.edu.in', badge: '⭐ Top Govt Medical' },
+            { name: 'Seth G.S. Medical College', location: 'Mumbai', stream: 'PCB', type: 'Government', cutoff: 92, course: 'MBBS', url: 'https://www.kem.edu', badge: '⭐ Govt Medical' },
+            { name: 'Dr. D.Y. Patil Medical College', location: 'Pune', stream: 'PCB', type: 'Private', cutoff: 70, course: 'MBBS / BDS', url: 'https://medicine.dpu.edu.in', badge: '🏫 Private Medical' },
+            { name: 'Bharati Vidyapeeth Medical College', location: 'Pune', stream: 'PCB', type: 'Private', cutoff: 65, course: 'MBBS', url: 'https://www.bvuniversity.edu.in', badge: '🏫 Private Medical' },
+            { name: 'Symbiosis School of Biological Sciences', location: 'Pune', stream: 'PCB', type: 'Private', cutoff: 75, course: 'B.Sc Biotechnology', url: 'https://ssbs.edu.in', badge: '🔬 Bio Sciences' },
+            { name: 'Symbiosis Centre for Management Studies (SCMS)', location: 'Pune', stream: 'Commerce', type: 'Private', cutoff: 80, course: 'BBA / MBA', url: 'https://scmspune.ac.in', badge: '💼 Management' },
+            { name: 'Narsee Monjee Institute of Management', location: 'Mumbai', stream: 'Commerce', type: 'Autonomous', cutoff: 82, course: 'BBA / B.Com Hons', url: 'https://www.nmims.edu', badge: '💼 Top B-School' },
+            { name: 'H.R. College of Commerce', location: 'Mumbai', stream: 'Commerce', type: 'Autonomous', cutoff: 85, course: 'B.Com / BMS / BAF', url: 'https://www.hrcollege.edu', badge: '⭐ Commerce Top' },
+            { name: 'Pune University – Dept of Commerce', location: 'Pune', stream: 'Commerce', type: 'Government', cutoff: 60, course: 'B.Com', url: 'https://www.unipune.ac.in', badge: '🎓 Govt' },
+            { name: 'Symbiosis School of Economics', location: 'Pune', stream: 'Commerce', type: 'Private', cutoff: 75, course: 'B.Sc Economics', url: 'https://ssecon.edu.in', badge: '📊 Economics' },
+            { name: 'Fergusson College Pune', location: 'Pune', stream: 'Arts', type: 'Autonomous', cutoff: 55, course: 'B.A. (Humanities)', url: 'https://www.fergusson.edu', badge: '📚 Arts Premier' },
+            { name: 'St. Xavier\'s College Mumbai', location: 'Mumbai', stream: 'Arts', type: 'Autonomous', cutoff: 75, course: 'B.A. / Mass Media', url: 'https://xaviers.edu', badge: '📚 Arts Premier' },
+            { name: 'Symbiosis School of Media & Communication', location: 'Pune', stream: 'Arts', type: 'Private', cutoff: 65, course: 'BA Mass Communication', url: 'https://ssmc.edu.in', badge: '🎬 Mass Media' },
+            { name: 'MES Garware College of Commerce', location: 'Pune', stream: 'Commerce', type: 'Autonomous', cutoff: 68, course: 'B.Com / BBA', url: 'https://www.garwarecollege.ac.in', badge: '🎓 Autonomous' },
+            { name: 'Elphinstone College Mumbai', location: 'Mumbai', stream: 'Arts', type: 'Government', cutoff: 50, course: 'B.A. Arts & Science', url: 'https://elphinstonecollege.ac.in', badge: '⭐ Govt Arts' },
+            // ---- Nashik Engineering Colleges ----
+            { name: 'K.K. Wagh Institute of Engineering (KKWIEER)', location: 'Nashik', stream: 'PCM', type: 'Autonomous', cutoff: 70, course: 'B.E. (CS / Mech / Civil / EE)', url: 'https://www.kkwagh.edu.in', badge: '🏆 Nashik Top' },
+            { name: 'Sandip Institute of Technology & Research Centre', location: 'Nashik', stream: 'PCM', type: 'Private', cutoff: 55, course: 'B.E. Engineering', url: 'https://www.sandipfoundation.org', badge: '🏫 Nashik Private' },
+            { name: 'Matoshri College of Engineering', location: 'Nashik', stream: 'PCM', type: 'Private', cutoff: 57, course: 'B.E. (CS / Mech / Civil)', url: 'https://www.mcoerc.ac.in', badge: '🏫 Nashik' },
+            { name: 'R.H. Sapat College of Engineering (GES)', location: 'Nashik', stream: 'PCM', type: 'Government', cutoff: 68, course: 'B.E. Engineering', url: 'https://www.ges-coengg.org', badge: '⭐ Nashik Govt' },
+            { name: 'Maeer\'s MIT College of Engineering – Nashik', location: 'Nashik', stream: 'PCM', type: 'Private', cutoff: 62, course: 'B.E. (CS / Mech)', url: 'https://mitcoenashik.info', badge: '🏫 MIT Nashik' },
+            { name: 'Amrutvahini College of Engineering', location: 'Sangamner (Near Nashik)', stream: 'PCM', type: 'Autonomous', cutoff: 65, course: 'B.E. (CS / Mech / EE)', url: 'https://acoe.ac.in', badge: '🎓 Autonomous' },
+            { name: 'NDMVP\'s KBT College of Engineering', location: 'Nashik', stream: 'PCM', type: 'Autonomous', cutoff: 66, course: 'B.E. CS / Mech / Civil', url: 'https://www.kbtcoe.org', badge: '🎓 NDMVPS' },
+            { name: 'Pravara Rural Engineering College', location: 'Loni (Near Nashik)', stream: 'PCM', type: 'Government', cutoff: 60, course: 'B.E. Engineering', url: 'https://www.prec.ac.in', badge: '⭐ Rural Govt' },
+        ];
+
+        // ====== JOB DATA ======
+        const jobData = [
+            { title: 'Junior Software Engineer', company: 'Infosys', location: 'Pune / Remote', domain: 'Engineering', type: 'Fresher', salary: '₹3.5L – ₹7L/yr', skills: ['Java', 'Python', 'Problem Solving'], url: 'https://career.infosys.com', posted: '2 days ago', logo: '💻' },
+            { title: 'Data Analyst Trainee', company: 'TCS', location: 'Mumbai', domain: 'Engineering', type: 'Fresher', salary: '₹3L – ₹6L/yr', skills: ['Excel', 'SQL', 'Statistics'], url: 'https://www.tcs.com/careers', posted: '3 days ago', logo: '📊' },
+            { title: 'Hospital Management Trainee', company: 'Apollo Hospitals', location: 'Pune', domain: 'Medical', type: 'Fresher', salary: '₹2.5L – ₹5L/yr', skills: ['Healthcare', 'Communication', 'MS Office'], url: 'https://careers.apollohospitals.com', posted: '1 week ago', logo: '🏥' },
+            { title: 'Medical Representative', company: 'Sun Pharma', location: 'Maharashtra', domain: 'Medical', type: 'Fresher', salary: '₹3L – ₹5L/yr', skills: ['Biology', 'Communication', 'Sales'], url: 'https://www.sunpharma.com/careers', posted: '4 days ago', logo: '💊' },
+            { title: 'Lab Technician (Trainee)', company: 'Thyrocare Labs', location: 'Pune / Mumbai', domain: 'Medical', type: 'Fresher', salary: '₹2L – ₹4L/yr', skills: ['Biology', 'Lab Skills', 'Accuracy'], url: 'https://www.thyrocare.com', posted: '5 days ago', logo: '🔬' },
+            { title: 'Business Development Executive', company: 'HDFC Bank', location: 'Pune', domain: 'Business', type: 'Fresher', salary: '₹3L – ₹6L/yr', skills: ['Communication', 'Finance basics', 'Excel'], url: 'https://www.hdfcbank.com/careers', posted: '2 days ago', logo: '🏦' },
+            { title: 'Financial Analyst (Fresher)', company: 'ICICI Lombard', location: 'Mumbai', domain: 'Business', type: 'Fresher', salary: '₹4L – ₹8L/yr', skills: ['Accountancy', 'Excel', 'Analytical Thinking'], url: 'https://www.icicilombard.com/careers', posted: '1 week ago', logo: '📈' },
+            { title: 'Management Trainee – Operations', company: 'Mahindra & Mahindra', location: 'Pune', domain: 'Business', type: 'Fresher', salary: '₹4.5L – ₹9L/yr', skills: ['MBA/BBA', 'Leadership', 'Problem Solving'], url: 'https://careers.mahindra.com', posted: '3 days ago', logo: '🚗' },
+            { title: 'Content Writer & Social Media', company: 'Zee Media', location: 'Mumbai / Remote', domain: 'Creative', type: 'Fresher', salary: '₹2.5L – ₹5L/yr', skills: ['Writing', 'Creativity', 'Social Media'], url: 'https://careers.zeemedia.in', posted: '2 days ago', logo: '✍️' },
+            { title: 'Graphic Designer (Fresher)', company: 'Dentsu India', location: 'Pune / Remote', domain: 'Creative', type: 'Fresher', salary: '₹2.5L – ₹4.5L/yr', skills: ['Canva', 'Photoshop', 'Creativity'], url: 'https://www.dentsu.com/in/en', posted: '5 days ago', logo: '🎨' },
+            { title: 'Video Editor Intern', company: 'Times Network', location: 'Mumbai', domain: 'Creative', type: 'Internship', salary: '₹10k – ₹18k/month', skills: ['Premiere Pro', 'Storytelling', 'Creativity'], url: 'https://timesnetwork.in/careers', posted: '1 day ago', logo: '🎬' },
+            { title: 'Junior Journalist / Reporter', company: 'Lokmat Media', location: 'Pune', domain: 'Creative', type: 'Fresher', salary: '₹2L – ₹4L/yr', skills: ['Writing', 'Communication', 'Research'], url: 'https://www.lokmat.com', posted: '1 week ago', logo: '📰' },
+            { title: 'Civil Services Coaching Faculty', company: 'IAS Academy Pune', location: 'Pune', domain: 'Education', type: 'Part-time', salary: '₹20k – ₹40k/month', skills: ['GK', 'Teaching', 'Polity & History'], url: 'https://unacademy.com/careers', posted: '3 days ago', logo: '🏛' },
+            { title: 'Primary School Teacher', company: 'Podar Education', location: 'Pune / Nashik', domain: 'Education', type: 'Fresher', salary: '₹2L – ₹4L/yr', skills: ['Communication', 'Patience', 'Subject Knowledge'], url: 'https://podar.org/careers', posted: '4 days ago', logo: '📖' },
+            { title: 'Online Tutor (Any Subject)', company: 'BYJU\'S', location: 'Remote', domain: 'Education', type: 'Part-time', salary: '₹15k – ₹35k/month', skills: ['Subject Expertise', 'Communication', 'Online Tools'], url: 'https://byjus.com/careers', posted: '2 days ago', logo: '🎓' },
+            { title: 'Curriculum Design Intern', company: 'Khan Academy India', location: 'Remote', domain: 'Education', type: 'Internship', salary: '₹12k – ₹20k/month', skills: ['Research', 'Writing', 'Education'], url: 'https://www.khanacademy.org', posted: '6 days ago', logo: '📚' },
+            { title: 'CRPF / SSB Recruitment', company: 'Ministry of Home Affairs', location: 'Pan India', domain: 'Government', type: 'Fresher', salary: '₹20k – ₹40k/month', skills: ['Physical Fitness', 'Discipline', 'GK'], url: 'https://www.crpf.gov.in', posted: '1 week ago', logo: '🪖' },
+            { title: 'Revenue Talathi (Talathi Exam)', company: 'Maharashtra Government', location: 'Maharashtra', domain: 'Government', type: 'Fresher', salary: '₹25k – ₹40k/month', skills: ['Marathi', 'GK', 'Computer Basics'], url: 'https://maharecruitment.in', posted: '3 days ago', logo: '🏛' },
+            { title: 'Banking PO (IBPS PO)', company: 'Public Sector Banks', location: 'Maharashtra', domain: 'Government', type: 'Fresher', salary: '₹5L – ₹8L/yr', skills: ['Reasoning', 'Maths', 'English'], url: 'https://www.ibps.in', posted: '2 days ago', logo: '🏦' },
+            { title: 'Legal Research Intern', company: 'Khaitan & Co.', location: 'Mumbai', domain: 'Law', type: 'Internship', salary: '₹15k – ₹25k/month', skills: ['Legal Drafting', 'Research', 'English'], url: 'https://www.khaitanco.com', posted: '5 days ago', logo: '⚖️' },
+            { title: 'Court Internship – District Court', company: 'Pune District Court', location: 'Pune', domain: 'Law', type: 'Internship', salary: 'Stipend based', skills: ['Law basics', 'Communication', 'Accuracy'], url: 'https://districts.ecourts.gov.in', posted: '1 week ago', logo: '🏛' },
+            { title: 'Legal Executive (Fresher)', company: 'ICICI Legal Dept', location: 'Mumbai', domain: 'Law', type: 'Fresher', salary: '₹3.5L – ₹6L/yr', skills: ['Contract Law', 'MS Office', 'Drafting'], url: 'https://www.icicicareers.com', posted: '4 days ago', logo: '📜' },
+            { title: 'Mechanical Design Intern', company: 'Thermax Ltd', location: 'Pune', domain: 'Engineering', type: 'Internship', salary: '₹8k – ₹15k/month', skills: ['AutoCAD', 'SolidWorks', 'Mechanical Engg'], url: 'https://www.thermaxglobal.com/careers', posted: '3 days ago', logo: '⚙️' },
+            { title: 'Full Stack Developer (Fresher)', company: 'Persistent Systems', location: 'Pune / Remote', domain: 'Engineering', type: 'Fresher', salary: '₹4L – ₹8L/yr', skills: ['JavaScript', 'React', 'Node.js'], url: 'https://www.persistent.com/careers', posted: '1 day ago', logo: '🖥️' },
+        ];
+
+        // ====== COLLEGE FINDER LOGIC ======
+        function filterColleges() {
+            const stream = document.getElementById('col_stream').value;
+            const city = document.getElementById('col_city').value.toLowerCase();
+            const type = document.getElementById('col_type').value;
+            const keyword = (document.getElementById('col_search').value || '').toLowerCase();
+            const container = document.getElementById('collegeResults');
+            const countEl = document.getElementById('colCount');
+
+            let filtered = collegeData.filter(c => {
+                if (stream && c.stream !== stream) return false;
+                if (type && c.type !== type) return false;
+                if (city && !c.location.toLowerCase().includes(city)) return false;
+                if (keyword && !c.name.toLowerCase().includes(keyword) && !c.course.toLowerCase().includes(keyword) && !c.location.toLowerCase().includes(keyword)) return false;
+                return true;
+            });
+
+            if (countEl) countEl.textContent = filtered.length > 0 ? `Showing ${filtered.length} college${filtered.length > 1 ? 's' : ''}` : '';
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-3 text-center py-16 text-slate-500"><div class="text-5xl mb-4">🔍</div><p>No colleges found. Try different filters or clear the search.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(c => `
+                <div class="glass-card p-6 hover:scale-[1.02] transition-all flex flex-col">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-xs font-bold px-2 py-1 rounded-full" style="background:rgba(56,189,248,0.1);color:#38bdf8">${c.badge}</span>
+                        <span class="text-xs px-2 py-1 rounded-full" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)">${c.type}</span>
+                    </div>
+                    <h3 class="text-lg font-bold mb-1">${c.name}</h3>
+                    <p class="text-sm text-slate-400 muted mb-1">📍 ${c.location}</p>
+                    <p class="text-sm text-slate-400 muted mb-4">🎓 ${c.course}</p>
+                    <div class="mt-auto">
+                        <a href="${c.url}" target="_blank" class="btn-primary text-sm py-2 px-4 w-full text-center block">Visit College →</a>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ====== JOB FINDER LOGIC ======
+        function filterJobs() {
+            const domain = document.getElementById('job_domain').value;
+            const type = document.getElementById('job_type').value;
+            const keyword = document.getElementById('job_search').value.toLowerCase();
+            const container = document.getElementById('jobResults');
+
+            let filtered = jobData.filter(j => {
+                if (domain && j.domain !== domain) return false;
+                if (type && j.type !== type) return false;
+                if (keyword && !j.title.toLowerCase().includes(keyword) && !j.company.toLowerCase().includes(keyword) && !j.skills.some(s => s.toLowerCase().includes(keyword))) return false;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-16 text-slate-500"><div class="text-5xl mb-4">💼</div><p>No jobs found. Try different filters or keywords.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(j => `
+                <div class="glass-card p-5 flex flex-col sm:flex-row sm:items-center gap-5 hover:scale-[1.01] transition-all">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0" style="background:rgba(168,85,247,0.1)">${j.logo}</div>
+                    <div class="flex-1">
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <h3 class="text-lg font-bold">${j.title}</h3>
+                            <span class="text-xs py-0.5 px-2 rounded-full font-semibold" style="background:rgba(56,189,248,0.1);color:#38bdf8">${j.type}</span>
+                        </div>
+                        <p class="text-sm text-slate-400 muted mb-2">🏢 ${j.company} &nbsp;·&nbsp; 📍 ${j.location} &nbsp;·&nbsp; 🕒 ${j.posted}</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${j.skills.map(s => `<span class="text-xs px-2 py-1 rounded-lg" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-3 sm:min-w-[130px]">
+                        <div class="text-right">
+                            <div class="text-xs text-slate-500 mb-0.5">Salary</div>
+                            <div class="font-bold text-sm" style="color:#a855f7">${j.salary}</div>
+                        </div>
+                        <a href="${j.url}" target="_blank" class="btn-secondary text-sm py-2 px-5 text-center">Apply Now →</a>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ====== COURSE DATA ======
+        const courseData = [
+            // --- TECH ---
+            { title: 'Python for Beginners', platform: 'freeCodeCamp (YouTube)', domain: 'Tech', level: 'Beginner', price: 'Free', duration: '4 hrs', emoji: '🐍', tags: ['Python', 'Programming', 'Coding'], url: 'https://www.youtube.com/watch?v=rfscVS0vtbw', desc: 'Complete Python tutorial from scratch. No prior coding experience needed.' },
+            { title: 'Python Intermediate – OOP & Projects', platform: 'Coursera (free audit)', domain: 'Tech', level: 'Intermediate', price: 'Free', duration: '20 hrs', emoji: '🐍', tags: ['Python', 'OOP', 'Data Structures'], url: 'https://www.coursera.org/learn/python', desc: 'Build real Python projects and understand object-oriented programming.' },
+            { title: 'Web Development – HTML, CSS & JavaScript', platform: 'The Odin Project', domain: 'Tech', level: 'Beginner', price: 'Free', duration: 'Self-paced', emoji: '🌐', tags: ['HTML', 'CSS', 'JavaScript', 'Web'], url: 'https://www.theodinproject.com', desc: 'Free, open-source full road to becoming a web developer.' },
+            { title: 'Data Science with Python', platform: 'NPTEL (IIT)', domain: 'Tech', level: 'Intermediate', price: 'Free', duration: '12 weeks', emoji: '📊', tags: ['Data Science', 'Python', 'Statistics'], url: 'https://nptel.ac.in/courses/106106212', desc: 'Offered by IIT — covers data analysis, visualization, and ML basics.' },
+            { title: 'Machine Learning A–Z', platform: 'Udemy', domain: 'Tech', level: 'Advanced', price: 'Paid', duration: '44 hrs', emoji: '🤖', tags: ['ML', 'AI', 'Python', 'Scikit-learn'], url: 'https://www.udemy.com/course/machinelearning/', desc: 'Most popular ML course on Udemy. Hands-on projects included.' },
+            { title: 'C Programming for Beginners', platform: 'YouTube – CodeWithHarry', domain: 'Tech', level: 'Beginner', price: 'Free', duration: '10 hrs', emoji: '💻', tags: ['C Language', 'Programming'], url: 'https://www.youtube.com/playlist?list=PLu0W_9lII9aiXlkKDTKoGVEzqMzBUh7R', desc: 'Complete C language tutorial in Hindi, ideal for engineering first years.' },
+            { title: 'Java for Beginners', platform: 'NPTEL (IIT Kharagpur)', domain: 'Tech', level: 'Beginner', price: 'Free', duration: '8 weeks', emoji: '☕', tags: ['Java', 'OOP', 'Programming'], url: 'https://nptel.ac.in/courses/106105153', desc: 'IIT Kharagpur\'s official Java programming MOOC with certificate.' },
+            { title: 'Cybersecurity Essentials', platform: 'Cisco NetAcad (Free)', domain: 'Tech', level: 'Beginner', price: 'Free', duration: '30 hrs', emoji: '🔐', tags: ['Cybersecurity', 'Networking', 'IT'], url: 'https://www.netacad.com/courses/cybersecurity', desc: 'Understand how to protect networks, systems, and data from threats.' },
+            // --- BUSINESS ---
+            { title: 'Tally ERP 9 & TallyPrime', platform: 'YouTube – Learn Tally', domain: 'Business', level: 'Beginner', price: 'Free', duration: '8 hrs', emoji: '📒', tags: ['Tally', 'Accounting', 'Finance'], url: 'https://www.youtube.com/results?search_query=tally+erp+9+full+tutorial', desc: 'Master Tally accounting software used by every business in India.' },
+            { title: 'Financial Literacy & Personal Finance', platform: 'Khan Academy', domain: 'Business', level: 'Beginner', price: 'Free', duration: '5 hrs', emoji: '💰', tags: ['Finance', 'Banking', 'Investment'], url: 'https://www.khanacademy.org/college-careers-more/personal-finance', desc: 'Understand budgeting, taxes, investing and banking from scratch.' },
+            { title: 'Business Communication in English', platform: 'Coursera (British Council)', domain: 'Business', level: 'Beginner', price: 'Free', duration: '16 hrs', emoji: '🗣️', tags: ['Communication', 'English', 'Business'], url: 'https://www.coursera.org/learn/business-english-communication', desc: 'Improve professional writing, emails, presentations and speaking skills.' },
+            { title: 'Digital Marketing Fundamentals', platform: 'Google (Free Certificate)', domain: 'Business', level: 'Beginner', price: 'Free', duration: '40 hrs', emoji: '📣', tags: ['Marketing', 'SEO', 'Social Media'], url: 'https://learndigital.withgoogle.com/digitalgarage', desc: 'Google\'s free digital marketing certification course — globally recognised.' },
+            { title: 'MBA Essentials', platform: 'Coursera (Wharton/Penn)', domain: 'Business', level: 'Intermediate', price: 'Paid', duration: '4 months', emoji: '🏆', tags: ['MBA', 'Strategy', 'Management'], url: 'https://www.coursera.org/specializations/wharton-business-foundations', desc: 'Top-rated business foundations from one of the world\'s best B-Schools.' },
+            // --- MEDICAL ---
+            { title: 'NEET Biology – Complete Course', platform: 'YouTube – Unacademy NEET', domain: 'Medical', level: 'Beginner', price: 'Free', duration: 'Self-paced', emoji: '🧬', tags: ['NEET', 'Biology', 'Medical'], url: 'https://www.youtube.com/results?search_query=unacademy+neet+biology', desc: 'Full NCERT biology coverage for NEET aspirants — free video lectures.' },
+            { title: 'Anatomy & Physiology', platform: 'Khan Academy', domain: 'Medical', level: 'Beginner', price: 'Free', duration: '20 hrs', emoji: '🫀', tags: ['Anatomy', 'Biology', 'Health'], url: 'https://www.khanacademy.org/science/health-and-medicine', desc: 'Understand the human body systems — ideal for PCB and nursing students.' },
+            { title: 'First Aid & Basic Life Support (BLS)', platform: 'Coursera (Duke Univ.)', domain: 'Medical', level: 'Beginner', price: 'Free', duration: '8 hrs', emoji: '🩺', tags: ['First Aid', 'Healthcare', 'BLS'], url: 'https://www.coursera.org/learn/first-aid-bls', desc: 'Learn CPR, emergency response, and basic life-saving techniques.' },
+            { title: 'Healthcare Management', platform: 'NPTEL / Swayam', domain: 'Medical', level: 'Intermediate', price: 'Free', duration: '8 weeks', emoji: '🏥', tags: ['Healthcare', 'Management', 'Hospital'], url: 'https://swayam.gov.in', desc: 'Learn how hospitals and health systems are managed — for health admins.' },
+            // --- CREATIVE ---
+            { title: 'Graphic Design for Beginners', platform: 'Canva Design School (Free)', domain: 'Creative', level: 'Beginner', price: 'Free', duration: '3 hrs', emoji: '🎨', tags: ['Design', 'Canva', 'Visual Arts'], url: 'https://www.canva.com/designschool/', desc: 'Create stunning visuals, posters and social media content with Canva.' },
+            { title: 'Video Editing with CapCut', platform: 'YouTube – CapCut Tutorials', domain: 'Creative', level: 'Beginner', price: 'Free', duration: '5 hrs', emoji: '🎬', tags: ['Video Editing', 'CapCut', 'Content Creation'], url: 'https://www.youtube.com/results?search_query=capcut+tutorial+beginners', desc: 'Learn video editing for Reels, YouTube Shorts, and vlogs — beginner friendly.' },
+            { title: 'Creative Writing & Journalism', platform: 'Coursera (Michigan Univ.)', domain: 'Creative', level: 'Beginner', price: 'Free', duration: '16 hrs', emoji: '✍️', tags: ['Writing', 'Journalism', 'Storytelling'], url: 'https://www.coursera.org/learn/writing', desc: 'Develop your writing voice for blogs, articles, and journalism.' },
+            { title: 'Photography Basics', platform: 'YouTube – MKBHD / Peter McKinnon', domain: 'Creative', level: 'Beginner', price: 'Free', duration: '4 hrs', emoji: '📸', tags: ['Photography', 'Camera', 'Composition'], url: 'https://www.youtube.com/results?search_query=photography+basics+beginners', desc: 'Learn composition, lighting, and camera settings for stunning photos.' },
+            // --- GOVERNMENT ---
+            { title: 'Current Affairs & GK for UPSC/MPSC', platform: 'YouTube – Unacademy IAS', domain: 'Government', level: 'Beginner', price: 'Free', duration: 'Self-paced', emoji: '📰', tags: ['UPSC', 'MPSC', 'Current Affairs'], url: 'https://www.youtube.com/results?search_query=unacademy+UPSC+current+affairs', desc: 'Daily & monthly current affairs for government exam aspirants.' },
+            { title: 'Indian Polity – Lakshmikanth', platform: 'YouTube – PW IAS', domain: 'Government', level: 'Intermediate', price: 'Free', duration: '30 hrs', emoji: '🏛', tags: ['Polity', 'Constitution', 'UPSC'], url: 'https://www.youtube.com/results?search_query=lakshmikanth+polity+UPSC', desc: 'Complete Indian Polity course based on M. Lakshmikanth\'s book.' },
+            // --- SCIENCE ---
+            { title: 'Engineering Mathematics – Calculus & LA', platform: 'NPTEL (IIT Bombay)', domain: 'Science', level: 'Intermediate', price: 'Free', duration: '12 weeks', emoji: '📐', tags: ['Maths', 'Calculus', 'Engineering'], url: 'https://nptel.ac.in/courses/111101060', desc: 'Essential mathematics for engineering students — offered by IIT Bombay.' },
+            // --- FY ENGINEERING ---
+            { title: 'Engineering Physics', platform: 'NPTEL (IIT Madras)', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '8 weeks', emoji: '⚛️', tags: ['Physics', 'Waves', 'Optics', 'FY Engg'], url: 'https://nptel.ac.in/courses/115106066', desc: 'Core physics for FY Engineering: waves, optics, quantum mechanics, and solid-state physics — IIT Madras.' },
+            { title: 'Basic Electrical Engineering (BEE)', platform: 'NPTEL (IIT Kharagpur)', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '8 weeks', emoji: '⚡', tags: ['BEE', 'Electrical', 'Circuits', 'FY Engg'], url: 'https://nptel.ac.in/courses/108105053', desc: 'AC/DC circuits, transformers, and electrical machines — mandatory FY Engineering subject.' },
+            { title: 'Engineering Mechanics – Statics & Dynamics', platform: 'NPTEL (IIT Kharagpur)', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '8 weeks', emoji: '⚙️', tags: ['Mechanics', 'Statics', 'Dynamics', 'FY Engg'], url: 'https://nptel.ac.in/courses/112105170', desc: 'Force analysis, equilibrium, kinematics and Newton laws — essential for Mechanical & Civil students.' },
+            { title: 'Engineering Chemistry', platform: 'NPTEL (IIT Guwahati)', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '8 weeks', emoji: '🧪', tags: ['Chemistry', 'Thermodynamics', 'Polymers', 'FY Engg'], url: 'https://nptel.ac.in/courses/104103018', desc: 'Electrochemistry, corrosion, polymers, water treatment — core FY Chemistry subject.' },
+            { title: 'Engineering Maths – Differential Equations', platform: 'NPTEL (IIT Roorkee)', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '8 weeks', emoji: '📏', tags: ['Maths', 'Differential Equations', 'Laplace', 'FY Engg'], url: 'https://nptel.ac.in/courses/111107108', desc: 'ODEs, PDEs, Laplace transforms and Fourier series — used heavily in all engineering branches.' },
+            { title: 'Engineering Drawing & Graphics', platform: 'NPTEL (IIT Madras)', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '6 weeks', emoji: '📐', tags: ['Engineering Drawing', 'CAD', 'Graphics', 'FY Engg'], url: 'https://nptel.ac.in/courses/112106072', desc: 'Orthographic projections, isometric views, and AutoCAD basics — mandatory FY subject.' },
+            { title: 'Basic Electronics & Devices', platform: 'NPTEL (IIT Bombay)', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '8 weeks', emoji: '🔌', tags: ['Electronics', 'Diodes', 'Transistors', 'FY Engg'], url: 'https://nptel.ac.in/courses/117101057', desc: 'Diodes, transistors, op-amps — foundational for all ECE / EE engineering students.' },
+            { title: 'Environmental Studies (EVS)', platform: 'Swayam / NPTEL', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '4 weeks', emoji: '🌿', tags: ['EVS', 'Environment', 'Sustainability', 'FY Engg'], url: 'https://swayam.gov.in', desc: 'Mandatory FY subject: ecology, pollution types, natural resources, and sustainable development.' },
+            { title: 'C Programming for Engineers', platform: 'YouTube – CodeWithHarry', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '10 hrs', emoji: '💻', tags: ['C Language', 'Programming', 'FY Engg'], url: 'https://www.youtube.com/playlist?list=PLu0W_9lII9aiXlkKDTKoGVEzqMzBUh7R', desc: 'Full C tutorial in Hindi — arrays, pointers, functions; perfect for FY Engineering students.' },
+            { title: 'MATLAB for Engineers', platform: 'Coursera (Vanderbilt Univ.)', domain: 'FY Engineering', level: 'Beginner', price: 'Free', duration: '5 hrs', emoji: '📊', tags: ['MATLAB', 'Simulation', 'Engineering'], url: 'https://www.coursera.org/learn/matlab', desc: 'MATLAB basics used in maths labs, signal processing, and engineering simulations.' },
+        ];
+
+        // ====== SKILL COURSES LOGIC ======
+        function filterCourses() {
+            const domain = document.getElementById('crs_domain').value;
+            const level = document.getElementById('crs_level').value;
+            const price = document.getElementById('crs_price').value;
+            const keyword = document.getElementById('crs_search').value.toLowerCase();
+            const container = document.getElementById('courseResults');
+            const countEl = document.getElementById('crsCount');
+
+            let filtered = courseData.filter(c => {
+                if (domain && c.domain !== domain) return false;
+                if (level && c.level !== level) return false;
+                if (price && c.price !== price) return false;
+                if (keyword && !c.title.toLowerCase().includes(keyword) && !c.tags.some(t => t.toLowerCase().includes(keyword)) && !c.platform.toLowerCase().includes(keyword)) return false;
+                return true;
+            });
+
+            if (countEl) countEl.textContent = filtered.length > 0 ? `Showing ${filtered.length} course${filtered.length > 1 ? 's' : ''}` : '';
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-3 text-center py-16 text-slate-500"><div class="text-5xl mb-4">📚</div><p>No courses found. Try clearing the filters.</p></div>`;
+                return;
+            }
+
+            const levelColor = { 'Beginner': '#22c55e', 'Intermediate': '#f59e0b', 'Advanced': '#f87171' };
+            const domainGrad = { 'Tech': 'linear-gradient(135deg,#0ea5e9,#22d3ee)', 'Business': 'linear-gradient(135deg,#f59e0b,#f97316)', 'Medical': 'linear-gradient(135deg,#10b981,#06b6d4)', 'Creative': 'linear-gradient(135deg,#ec4899,#f43f5e)', 'Government': 'linear-gradient(135deg,#14b8a6,#0d9488)', 'Science': 'linear-gradient(135deg,#8b5cf6,#a78bfa)' };
+
+            container.innerHTML = filtered.map(c => `
+                <div class="glass-card p-6 hover:scale-[1.02] transition-all flex flex-col">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4" style="background:${(domainGrad[c.domain] || '').replace('linear-gradient(135deg,', 'rgba(').replace(',', '33,').split(')')[0]}10)">${c.emoji}</div>
+                    <div class="flex gap-2 flex-wrap mb-3">
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background:rgba(56,189,248,0.1);color:#38bdf8">${c.domain}</span>
+                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="color:${levelColor[c.level]};background:${levelColor[c.level]}22">${c.level}</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)">${c.price === 'Free' ? '🆓 Free' : '💳 Paid'}</span>
+                    </div>
+                    <h3 class="text-base font-bold mb-1">${c.title}</h3>
+                    <p class="text-xs text-slate-400 muted mb-2">🎓 ${c.platform} &nbsp;·&nbsp; ⏱ ${c.duration}</p>
+                    <p class="text-sm text-slate-400 muted mb-4 flex-1">${c.desc}</p>
+                    <div class="flex flex-wrap gap-1 mb-4">
+                        ${c.tags.map(t => `<span class="text-xs px-2 py-0.5 rounded" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)">${t}</span>`).join('')}
+                    </div>
+                    <a href="${c.url}" target="_blank" class="btn-primary text-sm py-2 px-4 w-full text-center block mt-auto">Start Learning →</a>
+                </div>`).join('');
+        }
+
+        // Init
+        renderAssessment();
+        filterColleges();
+        filterJobs();
+        filterCourses();
+    </script>
+    <!-- ====== AI CAREER ASSISTANT CHATBOT ====== -->
+    <div id="aiChatBtn" onclick="toggleChat()" title="Ask AI Career Assistant"
+        style="position:fixed;bottom:28px;right:28px;z-index:9999;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#a855f7);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 0 0 0 rgba(56,189,248,0.5);animation:chatPulse 2s infinite;font-size:1.6rem;transition:transform 0.2s">
+        🤖
+    </div>
+
+    <div id="aiChatPanel"
+        style="display:none;position:fixed;bottom:100px;right:24px;z-index:9998;width:360px;max-width:calc(100vw - 32px);background:rgba(10,15,30,0.97);backdrop-filter:blur(20px);border:1px solid rgba(56,189,248,0.2);border-radius:20px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,0.6);flex-direction:column">
+
+        <!-- Header -->
+        <div
+            style="background:linear-gradient(135deg,#0ea5e9,#a855f7);padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+                <div
+                    style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:1.3rem">
+                    🤖</div>
+                <div>
+                    <div style="font-weight:700;font-size:0.95rem;color:#fff">CareerAI Assistant</div>
+                    <div style="font-size:0.72rem;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:4px">
+                        <span
+                            style="width:6px;height:6px;background:#4ade80;border-radius:50%;display:inline-block"></span>
+                        Online · Ready to help
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleChat()"
+                style="background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.2rem;cursor:pointer;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center">✕</button>
+        </div>
+
+        <!-- Messages -->
+        <div id="chatMessages"
+            style="height:340px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth">
+        </div>
+
+        <!-- Quick replies -->
+        <div id="quickReplies" style="padding:6px 12px;display:flex;flex-wrap:wrap;gap:6px"></div>
+
+        <!-- Input -->
+        <div style="padding:12px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:8px">
+            <input id="chatInput" type="text" placeholder="Ask me anything about careers…"
+                style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:9px 14px;color:#f1f5f9;font-size:0.87rem;outline:none"
+                onkeydown="if(event.key==='Enter') sendChat()" />
+            <button onclick="sendChat()"
+                style="background:linear-gradient(135deg,#0ea5e9,#a855f7);border:none;border-radius:12px;width:40px;height:40px;cursor:pointer;color:#fff;font-size:1.1rem;display:flex;align-items:center;justify-content:center">➤</button>
+        </div>
+    </div>
+
+    <style>
+        @keyframes chatPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.55);
+            }
+
+            70% {
+                box-shadow: 0 0 0 14px rgba(56, 189, 248, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+            }
+        }
+
+        #chatMessages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #chatMessages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #chatMessages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+    </style>
+
+    <script>
+        // ====== AI CHAT BOT ======
+        let chatOpen = false;
+        let chatInitialised = false;
+
+        function toggleChat() {
+            const panel = document.getElementById('aiChatPanel');
+            chatOpen = !chatOpen;
+            panel.style.display = chatOpen ? 'flex' : 'none';
+            panel.style.flexDirection = 'column';
+            document.getElementById('aiChatBtn').style.transform = chatOpen ? 'scale(0.88)' : 'scale(1)';
+            if (chatOpen && !chatInitialised) {
+                chatInitialised = true;
+                setTimeout(() => addBotMsg("👋 Hi! I'm your **CareerAI Assistant**. I'm here to help you choose the right career path, college, job, or course.\n\nWhat would you like help with today?", true), 400);
+                showQuickReplies(['🎓 Choose a career', '🏫 Find colleges', '💼 Find jobs', '📚 Course advice', '💡 Stream guidance']);
+            }
+            if (chatOpen) setTimeout(() => document.getElementById('chatInput').focus(), 300);
+        }
+
+        function addBotMsg(text, withDelay) {
+            const msgs = document.getElementById('chatMessages');
+            if (withDelay) {
+                // typing indicator
+                const typing = document.createElement('div');
+                typing.id = 'typingDot';
+                typing.style.cssText = 'display:flex;gap:4px;padding:10px 14px;background:rgba(56,189,248,0.08);border-radius:14px 14px 14px 2px;width:fit-content;max-width:80%';
+                typing.innerHTML = '<span style="width:7px;height:7px;background:#38bdf8;border-radius:50%;animation:dotBounce 0.8s 0s infinite alternate"></span><span style="width:7px;height:7px;background:#38bdf8;border-radius:50%;animation:dotBounce 0.8s 0.15s infinite alternate"></span><span style="width:7px;height:7px;background:#38bdf8;border-radius:50%;animation:dotBounce 0.8s 0.3s infinite alternate"></span>';
+                msgs.appendChild(typing);
+                msgs.scrollTop = msgs.scrollHeight;
+                setTimeout(() => {
+                    typing.remove();
+                    renderBotMsg(text, msgs);
+                }, 900);
+            } else {
+                renderBotMsg(text, msgs);
+            }
+        }
+
+        function renderBotMsg(text, msgs) {
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;gap:8px;align-items:flex-start';
+            // parse **bold** and \n
+            const formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            div.innerHTML = `
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#a855f7);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.85rem">🤖</div>
+            <div style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.12);padding:10px 14px;border-radius:14px 14px 14px 2px;font-size:0.84rem;line-height:1.5;color:#e2e8f0;max-width:85%">${formatted}</div>`;
+            msgs.appendChild(div);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function addUserMsg(text) {
+            const msgs = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex;justify-content:flex-end';
+            div.innerHTML = `<div style="background:linear-gradient(135deg,rgba(14,165,233,0.25),rgba(168,85,247,0.18));border:1px solid rgba(56,189,248,0.2);padding:10px 14px;border-radius:14px 14px 2px 14px;font-size:0.84rem;line-height:1.5;color:#e2e8f0;max-width:85%">${text}</div>`;
+            msgs.appendChild(div);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function showQuickReplies(items) {
+            const qr = document.getElementById('quickReplies');
+            qr.innerHTML = items.map(i =>
+                `<button onclick="handleQuick('${i}')" style="background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);border-radius:20px;padding:5px 12px;font-size:0.78rem;color:#38bdf8;cursor:pointer;white-space:nowrap">${i}</button>`
+            ).join('');
+        }
+
+        function handleQuick(text) {
+            document.getElementById('quickReplies').innerHTML = '';
+            addUserMsg(text);
+            processQuery(text);
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            document.getElementById('quickReplies').innerHTML = '';
+            addUserMsg(text);
+            processQuery(text);
+        }
+
+        // ====== SMART AI RESPONSE ENGINE ======
+        function processQuery(q) {
+            const t = q.toLowerCase();
+
+            // PCM / Engineering stream
+            if (t.includes('pcm') || (t.includes('engineering') && (t.includes('stream') || t.includes('choose') || t.includes('career') || t.includes('which')))) {
+                addBotMsg("**PCM (Physics, Chemistry, Maths)** students have excellent options! 🔧\n\n🎯 **Top Careers:**\n• Software / Computer Engineer\n• Mechanical / Civil / Electrical Engineer\n• Data Scientist / AI Engineer\n• Architect\n• Pilot / Defence Officer\n\n📚 **Key Entrance Exams:** JEE Mains & Advanced, MHT-CET, NATA\n\nWould you like college or course recommendations for engineering?", true);
+                showQuickReplies(['Engineering colleges in Nashik', 'Python course for beginners', 'Engineering jobs', '🏠 Main menu']);
+            }
+            // PCB / Medical stream
+            else if (t.includes('pcb') || t.includes('biology') || t.includes('doctor') || t.includes('mbbs') || t.includes('neet') || t.includes('medical')) {
+                addBotMsg("**PCB (Physics, Chemistry, Biology)** opens doors to life sciences! 🏥\n\n🎯 **Top Careers:**\n• Doctor / MBBS & Specialist\n• Pharmacist / Dentist\n• Biotechnologist / Research Scientist\n• Nursing / Physiotherapy\n• Veterinary Doctor\n\n📚 **Key Exams:** NEET-UG, NEET-PG, AIIMS entrance\n\nShall I suggest medical colleges or NEET prep courses?", true);
+                showQuickReplies(['Medical colleges Maharashtra', 'NEET preparation tips', 'Biology courses', '🏠 Main menu']);
+            }
+            // Commerce stream
+            else if (t.includes('commerce') || t.includes('accounts') || t.includes('economics') || t.includes('ca ') || t.includes('chartered')) {
+                addBotMsg("**Commerce** stream opens exciting business and finance paths! 💼\n\n🎯 **Top Careers:**\n• Chartered Accountant (CA)\n• Business Manager / MBA\n• Financial Analyst / Investment Banker\n• Entrepreneur / Startup Founder\n• Tax Consultant / Company Secretary\n\n📚 **Key Exams:** CA Foundation, IPMAT, CAT/XAT for MBA\n\nWant college or course recommendations?", true);
+                showQuickReplies(['MBA colleges Pune', 'Tally ERP course', 'Business jobs', '🏠 Main menu']);
+            }
+            // Arts / Humanities stream
+            else if (t.includes('arts') || t.includes('humanities') || t.includes('history') || t.includes('political') || t.includes('upsc') || t.includes('ias') || t.includes('law')) {
+                addBotMsg("**Arts / Humanities** is the gateway to impactful careers! 🏛\n\n🎯 **Top Careers:**\n• IAS / IPS / Civil Servant (UPSC)\n• Lawyer / Advocate\n• Journalist / Content Creator\n• Social Worker / NGO Leader\n• Teacher / Professor\n• Graphic Designer / Film Director\n\n📚 **Key Exams:** UPSC, CLAT (Law), MPSC, NID/NID\n\nWant course or college recommendations?", true);
+                showQuickReplies(['UPSC preparation', 'Law colleges', 'Creative career advice', '🏠 Main menu']);
+            }
+            // Software / IT career
+            else if (t.includes('software') || t.includes('coding') || t.includes('programmer') || t.includes('developer') || t.includes('python') || t.includes('javascript')) {
+                addBotMsg("**Software / IT** is one of the highest-demand careers today! 💻\n\n🛤 **6-Month Roadmap:**\n• Month 1–2: Learn Python or JavaScript basics\n• Month 3: Build simple projects (calculator, todo app)\n• Month 4: Learn HTML/CSS & databases (SQL)\n• Month 5: Pick a framework (React, Django, etc.)\n• Month 6: Build a portfolio & apply for internships\n\n💰 **Salary:** ₹4L–₹20L/yr as fresher at TCS, Infosys, Wipro, startups\n\nShall I suggest courses to get started?", true);
+                showQuickReplies(['Python for beginners course', 'IT jobs in Pune', 'Web development course', '🏠 Main menu']);
+            }
+            // College related
+            else if (t.includes('college') || t.includes('nashik') || t.includes('pune') || t.includes('iit') || t.includes('admission') || t.includes('university')) {
+                addBotMsg("I can help you find the right college! 🎓\n\nOur **College Finder** has 30+ Maharashtra colleges including:\n• 🏆 **IIT Bombay**, COEP, VJTI (PCM/Engineering)\n• 🏥 **B.J. Medical College**, Grant Medical College (PCB)\n• 💼 **NMIMS**, H.R. College, Symbiosis (Commerce)\n• 📚 **Fergusson College**, St. Xavier's (Arts)\n• 🔧 **KKWIEER**, KBT College, Matoshri** (Nashik Engineering)\n\nGo to **🎓 Colleges** in the navbar to filter by stream, city, and type!", true);
+                showQuickReplies(['Engineering colleges Nashik', 'Medical colleges Pune', 'Commerce colleges Mumbai', '🏠 Main menu']);
+            }
+            // Job related
+            else if (t.includes('job') || t.includes('fresher') || t.includes('internship') || t.includes('salary') || t.includes('placement') || t.includes('work')) {
+                addBotMsg("Let's find you the right opportunity! 💼\n\nOur **Job Finder** has 24+ listings across:\n• 💻 Engineering — Infosys, TCS, Persistent (₹3.5L–₹8L)\n• 🏥 Medical — Apollo, Sun Pharma, Thyrocare\n• 💰 Business — HDFC, ICICI, Mahindra (₹3L–₹9L)\n• 🎨 Creative — Zee Media, Dentsu, Lokmat\n• 🏛 Government — CRPF, MPSC, IBPS PO\n• ⚖️ Law — Khaitan & Co., ICICI Legal\n\nClick **💼 Jobs** in the navbar and filter by domain, type, or keyword!", true);
+                showQuickReplies(['Engineering jobs', 'Government jobs', 'Business job for freshers', '🏠 Main menu']);
+            }
+            // Courses related
+            else if (t.includes('course') || t.includes('learn') || t.includes('skill') || t.includes('study') || t.includes('free course') || t.includes('nptel')) {
+                addBotMsg("Great choice — continuous learning is key! 📚\n\nOur **Skill Courses** section has 34+ curated courses:\n• 🐍 Python for Beginners (freeCodeCamp - FREE)\n• ⚡ Basic Electrical Engineering (NPTEL - FREE)\n• ⚙️ Engineering Mechanics (NPTEL - FREE)\n• 📒 Tally ERP 9 (YouTube - FREE)\n• 🧬 NEET Biology (Unacademy - FREE)\n• 📐 Engineering Maths - Diff Equations (NPTEL)\n\nClick **📚 Courses** → filter by **🎓 FY Engineering** for first-year subjects!", true);
+                showQuickReplies(['FY Engineering courses', 'Free tech courses', 'Business courses', '🏠 Main menu']);
+            }
+            // Civil services / UPSC
+            else if (t.includes('civil') || t.includes('ias') || t.includes('ips') || t.includes('upsc') || t.includes('mpsc') || t.includes('government exam')) {
+                addBotMsg("**Civil Services (UPSC/MPSC)** is one of India's most prestigious career paths! 🏛\n\n🛤 **Preparation Roadmap:**\n• Read NCERT books (Class 6–12) first\n• Study Lakshmikanth for Polity\n• Follow daily news (The Hindu / PIB)\n• Practice previous year papers\n• Attempt MPSC first for practice\n\n⏳ **Timeline:** 1–3 years of dedicated preparation\n💰 **Salary (IAS):** ₹56,000–₹2.5L/month + perks\n\nWant current affairs or polity course links?", true);
+                showQuickReplies(['UPSC courses', 'Government jobs', 'Arts stream advice', '🏠 Main menu']);
+            }
+            // Salary queries
+            else if (t.includes('salary') || t.includes('earn') || t.includes('income') || t.includes('package')) {
+                addBotMsg("Here are typical **starting salaries** in India 💰:\n\n| Career | Fresher Salary |\n|--------|----------------|\n| Software Engineer | ₹4L–₹8L/yr |\n| Doctor (MBBS intern) | ₹18k–₹50k/month |\n| CA / Finance | ₹5L–₹10L/yr |\n| Lawyer (junior) | ₹2L–₹5L/yr |\n| IAS Officer | ₹56k+/month |\n| Creative / Media | ₹2.5L–₹5L/yr |\n\nSalaries grow rapidly with experience and specialisation!", true);
+                showQuickReplies(['Software career path', 'Medical career', 'Business career', '🏠 Main menu']);
+            }
+            // Assessment
+            else if (t.includes('assessment') || t.includes('test') || t.includes('quiz') || t.includes('know my career')) {
+                addBotMsg("Taking the **Career Assessment** is the best way to get personalised results! 🎯\n\nIt takes just 5 minutes and asks about:\n• Step 1: Your name, stream, favourite subject, rank\n• Step 2: Subject strengths (16 areas)\n• Step 3: Soft skills (12 options)\n• Step 4: Career interests (16 fields)\n• Step 5: Review & get AI results!\n\nClick **'Start Free Assessment'** on the home page or the Assessment tab in the navbar!", true);
+                showQuickReplies(['🏠 Go to Assessment', 'Career options', '🏠 Main menu']);
+            }
+            // Greeting / start
+            else if (t.includes('hello') || t.includes('hi') || t.includes('hey') || t.includes('help') || t.includes('main menu') || t.includes('start') || t.includes('menu')) {
+                addBotMsg("Hello! 👋 I'm your **CareerAI Assistant** — here to guide you every step of the way!\n\nI can help you with:\n• 🎓 Choosing the right career for your stream\n• 🏫 Finding the best colleges in Maharashtra\n• 💼 Discovering fresher jobs & internships\n• 📚 Finding the right courses to upskill\n• 💡 UPSC, NEET, JEE, MBA guidance\n\nWhat would you like to explore?", true);
+                showQuickReplies(['🎓 Choose a career', '🏫 Find colleges', '💼 Find jobs', '📚 Course advice', '💡 Stream guidance']);
+            }
+            // choose career / general
+            else if (t.includes('choose') || t.includes('which career') || t.includes('what career') || t.includes('best career') || t.includes('guidance')) {
+                addBotMsg("To pick the **right career**, answer these 3 questions to yourself:\n\n1️⃣ **What is your 12th stream?**\n   → PCM, PCB, Commerce, or Arts?\n\n2️⃣ **Which subjects do you enjoy most?**\n   → Maths, Biology, English, Economics...?\n\n3️⃣ **What kind of work excites you?**\n   → Solving problems? Helping people? Creating content? Leading teams?\n\nFor the most accurate result, take our **AI Assessment** — it analyses all your answers and recommends top 3 careers with match scores!", true);
+                showQuickReplies(['PCM career options', 'PCB career options', 'Commerce careers', 'Arts careers', 'Take Assessment']);
+            }
+            // default / fallback
+            else {
+                addBotMsg("I'm not sure about that specific topic, but I'm great at:\n\n• 🎓 **Career guidance** by stream (PCM/PCB/Commerce/Arts)\n• 🏫 **College finder** for Maharashtra\n• 💼 **Job & internship** recommendations\n• 📚 **Course** suggestions\n• 💰 **Salary** information\n\nTry asking: *\"Which career is best for PCM?\"* or *\"Show me engineering colleges in Nashik\"*", true);
+                showQuickReplies(['Career advice', 'College help', 'Job help', 'Course recommendations']);
+            }
+        }
+
+        // Add dotBounce animation
+        const chatStyle = document.createElement('style');
+        chatStyle.textContent = `@keyframes dotBounce { from { transform:translateY(0); } to { transform:translateY(-5px); } }`;
+        document.head.appendChild(chatStyle);
+    </script>
+
+</body>
+
+</html>
